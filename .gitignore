@@ -1,0 +1,5 @@
+/target/
+/songs/
+/scripts/
+/src/main/resources/scripts/*
+!/src/main/resources/scripts/.gitkeep 
