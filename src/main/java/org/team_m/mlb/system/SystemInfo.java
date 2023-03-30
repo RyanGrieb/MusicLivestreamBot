@@ -1,4 +1,4 @@
-package org.team_m.mlb;
+package org.team_m.mlb.system;
 
 public class SystemInfo {
 

@@ -1,35 +1,33 @@
 package org.team_m.mlb;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javafx.application.Application;
+import org.team_m.mlb.system.SystemFiles;
+import org.team_m.mlb.system.SystemInfo;
+
 import javafx.stage.Stage;
 
-public class MusicLivestreamBot extends Application {
-
-	// see - https://github.com/obs-websocket-community-projects/obs-websocket-java
+public class MusicLivestreamBot {
 
 	public static void main(String[] args) {
-		Application.launch(args);
+		String songsDirectory = System.getProperty("user.dir") + "/songs";
+		String imagesDirectory = System.getProperty("user.dir") + "/images";
+		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory);
+		ArrayList<String> imageNames = SystemFiles.getFileNameList(imagesDirectory);
+		
+		PlayerFrame frame = new PlayerFrame();
+		frame.setAvailableSongsList(songNames);
+		frame.setAvailableImages(imageNames);
+		
+		frame.onGoLiveButtonClicked((Void) -> {
+		    //System.out.println("Go Live button clicked!");
+			//TODO: Reference the code below to start livestream.
+		});
 	}
 
-	@Override
 	public void start(Stage stage) throws Exception {
-
-		// https://developers.google.com/youtube/v3/live/guides/rtmps-ingestion
-
-		// String bip = "./songs/Chris Stapleton - Tennessee Whiskey (Official
-		// Audio).mp3";
-		// Media hit = new Media(new File(bip).toURI().toString());
-		// MediaPlayer mediaPlayer = new MediaPlayer(hit);
-		// mediaPlayer.play();
-
-		// PlaylistDownloader.downloadPlaylist(
-		// "https://www.youtube.com/watch?v=4zAThXFOy2c&list=PL3oW2tjiIxvQW6c-4Iry8Bpp3QId40S5S");
-
-		// System.out.println(LivestreamPlayer.getRandomFile(System.getProperty("user.dir")
-		// + "/songs", 0));
 		boolean validNumber = false;
 
 		// General input variable
@@ -65,54 +63,46 @@ public class MusicLivestreamBot extends Application {
 		String livestreamOption = livestreamOptions[livestreamIndex];
 
 		System.out.println(
-				"** For information on getting the stream key, see section 2.xx from the installation document **");
+				"** For information on getting the stream key, see section 2.2 from the installation document **");
 		System.out.println("Provide stream key for streaming on " + livestreamOption + ": ");
 
 		livestreamKey = scanner.next();
 
 		System.out.println("To start livestream press ENTER");
-
+		
 		try {
 			System.in.read();
 		} catch (Exception e) {
 		}
+		
+		scanner.close();
 
 		LivestreamPlayer.setOption("livestream", livestreamOption);
 		LivestreamPlayer.setOption("stream_key", livestreamKey);
 
-		
 		AtomicBoolean shouldContinueRunning = new AtomicBoolean(true);
 
 		// Add a shutdown hook to set the flag to false when the program exits
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-		    @Override
-		    public void run() {
-		    	shouldContinueRunning.set(false);
-		    	LivestreamPlayer.stop();
-		    }
+			@Override
+			public void run() {
+				shouldContinueRunning.set(false);
+				LivestreamPlayer.stop();
+			}
 		});
-		
+
 		while (shouldContinueRunning.get()) {
-			String songFile = LivestreamPlayer.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
-			String imageFile = LivestreamPlayer.getRandomFile(System.getProperty("user.dir") + "/images", 0);
+			String songFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
+			String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
 			String songName = "";
-			if(SystemInfo.osType().equals("Windows")) {
+			if (SystemInfo.osType().equals("Windows")) {
 				songName = songFile.substring(songFile.lastIndexOf("songs\\") + 6, songFile.lastIndexOf("."));
-			}else { // If linux..
+			} else { // If linux..
 				songName = songFile.substring(songFile.lastIndexOf("songs/") + 6, songFile.lastIndexOf("."));
 			}
 
 			LivestreamPlayer.livestreamVideo(songFile, imageFile, songName);
 		}
-
-		/*
-		 * stage.setTitle("Music Livestream Bot"); var javaVersion =
-		 * SystemInfo.javaVersion(); var javafxVersion = SystemInfo.javafxVersion();
-		 * 
-		 * var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java "
-		 * + javaVersion + "."); var scene = new Scene(new StackPane(label), 640, 480);
-		 * stage.setScene(scene); stage.show();
-		 */
 	}
 
 }

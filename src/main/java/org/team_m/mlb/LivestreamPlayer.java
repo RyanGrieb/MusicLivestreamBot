@@ -2,6 +2,9 @@ package org.team_m.mlb;
 
 import java.io.File;
 import java.util.Random;
+import java.util.Scanner;
+
+import org.team_m.mlb.system.SystemInfo;
 
 public class LivestreamPlayer {
 
@@ -17,20 +20,23 @@ public class LivestreamPlayer {
 
 	public static void livestreamVideo(String soundSource, String imageSource, String songName) {
 		String ffmpegCommand = null;
-		String fontSource = System.getProperty("user.dir") + "/fonts/times.ttf"; // FIXME: Not correct on Windows, use \\.
+		String fontSource = null;
 
 		switch (SystemInfo.osType()) {
 		case "Windows":
 			ffmpegCommand = System.getProperty("user.dir") + "\\scripts\\ffmpeg.exe";
+			fontSource = System.getProperty("user.dir") + "\\fonts\\times.ttf";
 			break;
 		case "Linux":
 			ffmpegCommand = "ffmpeg"; // TODO: Display error msg box if not installed
+			fontSource = System.getProperty("user.dir") + "/fonts/times.ttf";
 			break;
 		}
 
 		CommandRunner commandRunner = new CommandRunner(ffmpegCommand);
 		commandRunner.addArg("-y"); // Override output files (For real-time livestream)
-		commandRunner.addArg("-re"); // Use native framerate (For real-time livestream) (Prevent the music loop from skipping ahread to new song)
+		commandRunner.addArg("-re"); // Use native framerate (For real-time livestream) (Prevent the music loop from
+										// skipping ahread to new song)
 		commandRunner.addArg("-loop 1 -i \"" + imageSource + "\""); // Display static image
 		commandRunner.addArg(String.format("-i \"%s\"", soundSource));
 		commandRunner.addArg("-c:v libx264 -preset veryfast -b:v 500k -maxrate 500k -bufsize 1000k");
@@ -78,21 +84,5 @@ public class LivestreamPlayer {
 	public static void songImageToMp4(String imagePath, String mp3Path) {
 		// ffmpeg -loop 1 -i image.jpg -i one.mp3 -shortest -acodec copy -vcodec mjpeg
 		// result.mkv
-	}
-
-	/**
-	 * Selects a random file from a specified directory
-	 * 
-	 * @param path        Path of the directory.
-	 * @param repeatLimit Prevent getting the same random file in a specified limit.
-	 * @return
-	 */
-	public static String getRandomFile(String path, int repeatLimit) {
-		// TODO: Implement repeatLimit
-		Random rnd = new Random();
-		File directory = new File(path);
-		File[] files = directory.listFiles();
-
-		return files[rnd.nextInt(files.length)].getAbsolutePath();
 	}
 }
