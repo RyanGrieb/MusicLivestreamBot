@@ -1,4 +1,6 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.team_m.mlb</groupId>
 	<artifactId>MusicLivestreamBot</artifactId>
@@ -48,6 +50,11 @@
 			<version>11</version>
 			<classifier>mac</classifier>
 		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20230227</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -84,7 +91,8 @@
 					</archive>
 				</configuration>
 			</plugin>
-			<!-- Shade JavaFX so the user doesn't have to install it on their machine-->
+			<!-- Shade JavaFX so the user doesn't have to install it on their
+			machine-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -97,7 +105,8 @@
 						</goals>
 						<configuration>
 							<transformers>
-								<transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>org.team_m.mlb.MusicLivestreamBot</mainClass>
 								</transformer>
 							</transformers>

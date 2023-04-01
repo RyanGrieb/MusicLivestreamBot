@@ -1,22 +1,41 @@
 package org.team_m.mlb;
 
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Panel;
 import java.awt.SystemColor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.function.Consumer;
 
+import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.TitledBorder;
+
+import org.json.JSONObject;
+import org.team_m.mlb.system.SystemFiles;
 
 public class PlayerFrame extends JFrame {
 
@@ -27,17 +46,46 @@ public class PlayerFrame extends JFrame {
 	private JList<String> listAvailableImages;
 	private Consumer<Void> goLiveCallback;
 
+	private ButtonGroup radioButtonGroup;
+	private JRadioButton rbPlatformYouTube;
+	private JRadioButton rbPlatformTwitch;
+	private String streamKey;
+
 	public PlayerFrame() {
 		setResizable(false);
 		setTitle("Music Livestream Bot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 679, 530);
+
+		JMenuBar menuBar = new JMenuBar();
+		setJMenuBar(menuBar);
+
+		JMenu mnNewMenu = new JMenu("File");
+		menuBar.add(mnNewMenu);
+
+		JMenuItem mntmNewMenuItem = new JMenuItem("Add Image...");
+		mnNewMenu.add(mntmNewMenuItem);
+
+		JMenu mnNewMenu_1 = new JMenu("Add Song");
+		mnNewMenu.add(mnNewMenu_1);
+
+		JMenuItem mntmNewMenuItem_2 = new JMenuItem("From Files...");
+		mnNewMenu_1.add(mntmNewMenuItem_2);
+
+		JMenuItem mntmNewMenuItem_1 = new JMenuItem("From Youtube");
+		mnNewMenu_1.add(mntmNewMenuItem_1);
+
+		JMenu mnNewMenu_2 = new JMenu("Options");
+		menuBar.add(mnNewMenu_2);
+
+		JMenuItem mntmNewMenuItem_3 = new JMenuItem("Edit Stream Keys...");
+		mnNewMenu_2.add(mntmNewMenuItem_3);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+
 		JScrollPane scrollPane = new JScrollPane();
 		scrollPane.setBounds(10, 36, 397, 103);
 		contentPane.add(scrollPane);
@@ -59,7 +107,7 @@ public class PlayerFrame extends JFrame {
 		JButton btnNewButton_1 = new JButton("Remove Song");
 		btnNewButton_1.setBounds(291, 7, 116, 23);
 		contentPane.add(btnNewButton_1);
-		
+
 		JScrollPane scrollPane_1 = new JScrollPane();
 		scrollPane_1.setBounds(10, 189, 397, 103);
 		contentPane.add(scrollPane_1);
@@ -87,28 +135,13 @@ public class PlayerFrame extends JFrame {
 		txtrCurrentlyPlaying.setEditable(false);
 		txtrCurrentlyPlaying.setLineWrap(true);
 		txtrCurrentlyPlaying.setText("Currently Playing:\r\nN/A");
-		txtrCurrentlyPlaying.setBounds(10, 303, 397, 70);
+		txtrCurrentlyPlaying.setBounds(10, 303, 326, 70);
 		contentPane.add(txtrCurrentlyPlaying);
 
 		JLabel label = new JLabel("New label");
 		label.setBounds(394, 384, -241, 39);
 		contentPane.add(label);
 
-		JButton btnGoLive = new JButton("Go Live");
-		btnGoLive.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				goLiveCallback.accept(null);
-			}
-		});
-		
-		btnGoLive.setBounds(10, 418, 133, 62);
-		contentPane.add(btnGoLive);
-
-		JLabel lblNewLabel_2 = new JLabel("Currently: Not Live");
-		lblNewLabel_2.setBounds(153, 442, 123, 14);
-		contentPane.add(lblNewLabel_2);
-		
 		JScrollPane scrollPane_2 = new JScrollPane();
 		scrollPane_2.setBounds(417, 36, 236, 256);
 		contentPane.add(scrollPane_2);
@@ -130,6 +163,90 @@ public class PlayerFrame extends JFrame {
 		JButton btnNewButton_3_1 = new JButton("-");
 		btnNewButton_3_1.setBounds(588, 4, 41, 29);
 		contentPane.add(btnNewButton_3_1);
+
+		JPanel panel = new JPanel();
+		panel.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
+				"Stream Options", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel.setBounds(346, 303, 307, 155);
+		contentPane.add(panel);
+
+		JPanel panel_2 = new JPanel();
+		panel.add(panel_2);
+		panel_2.setToolTipText("");
+		panel_2.setBorder(new TitledBorder(null, "Platforms", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+
+		Panel panel_1 = new Panel();
+		panel_2.add(panel_1);
+
+		radioButtonGroup = new ButtonGroup();
+		rbPlatformYouTube = new JRadioButton("Youtube");
+		panel_1.add(rbPlatformYouTube);
+		radioButtonGroup.add(rbPlatformYouTube);
+
+		rbPlatformTwitch = new JRadioButton("Twitch");
+		panel_1.add(rbPlatformTwitch);
+		radioButtonGroup.add(rbPlatformTwitch);
+
+		JSeparator separator = new JSeparator();
+		panel.add(separator);
+
+		JButton btnGoLive = new JButton("Go Live");
+		btnGoLive.setBounds(10, 404, 116, 54);
+		contentPane.add(btnGoLive);
+
+		JLabel lblNewLabel_2 = new JLabel("Currently: Not Live");
+		lblNewLabel_2.setBounds(10, 384, 116, 14);
+		contentPane.add(lblNewLabel_2);
+		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+		btnGoLive.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+				boolean noPlatform = true;
+				Iterator<AbstractButton> buttonIterator = radioButtonGroup.getElements().asIterator();
+				while (buttonIterator.hasNext()) {
+					JRadioButton radioButton = (JRadioButton) buttonIterator.next();
+					if (radioButton.isSelected()) {
+						noPlatform = false;
+					}
+				}
+
+				if (noPlatform) {
+					JOptionPane.showMessageDialog(null, "Please select a streaming platform.", "Error",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				try {
+					JSONObject jsonFile = SystemFiles.getJSONFromFile("./data/streams.json");
+
+					if (!jsonFile.has(getSelectedPlatform().toLowerCase())) {
+						streamKey = JOptionPane.showInputDialog(null,
+								"Enter your stream key for " + getSelectedPlatform(), "No stream key found",
+								JOptionPane.WARNING_MESSAGE);
+						JSONObject platformJsonObj = new JSONObject();
+						JSONObject streamKeyJsonObj = new JSONObject();
+						streamKeyJsonObj.put("key", streamKey);
+						platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
+						SystemFiles.updateJSONFile("./data/streams.json", platformJsonObj);
+					}
+					streamKey = jsonFile.getJSONObject(getSelectedPlatform().toLowerCase()).getString("key");
+
+				} catch (FileNotFoundException e1) {
+					streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + getSelectedPlatform(),
+							"No stream key found", JOptionPane.WARNING_MESSAGE);
+					JSONObject platformJsonObj = new JSONObject();
+					JSONObject streamKeyJsonObj = new JSONObject();
+					streamKeyJsonObj.put("key", streamKey);
+					platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
+					SystemFiles.createJSONFile("./data/streams.json", platformJsonObj);
+				}
+
+				goLiveCallback.accept(null);
+			}
+		});
 		setVisible(true);
 		setLocationRelativeTo(null); // Center window to center of screen.
 	}
@@ -160,9 +277,24 @@ public class PlayerFrame extends JFrame {
 			}
 		});
 	}
-	
-    public void onGoLiveButtonClicked(Consumer<Void> callback) {
-    	this.goLiveCallback = callback;
-       
-    }
+
+	public void onGoLiveButtonClicked(Consumer<Void> callback) {
+		this.goLiveCallback = callback;
+	}
+
+	public String getSelectedPlatform() {
+		Iterator<AbstractButton> buttonIterator = radioButtonGroup.getElements().asIterator();
+		while (buttonIterator.hasNext()) {
+			JRadioButton radioButton = (JRadioButton) buttonIterator.next();
+			if (radioButton.isSelected()) {
+				return radioButton.getText();
+			}
+		}
+
+		return null;
+	}
+
+	public String getStreamKey() {
+		return streamKey;
+	}
 }

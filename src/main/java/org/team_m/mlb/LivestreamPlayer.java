@@ -85,4 +85,9 @@ public class LivestreamPlayer {
 		// ffmpeg -loop 1 -i image.jpg -i one.mp3 -shortest -acodec copy -vcodec mjpeg
 		// result.mkv
 	}
+
+	public static boolean isLive() {
+		// TODO: Return true if our ffmpeg process is running.
+		return false;
+	}
 }

@@ -16,17 +16,45 @@ public class MusicLivestreamBot {
 		String imagesDirectory = System.getProperty("user.dir") + "/images";
 		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory);
 		ArrayList<String> imageNames = SystemFiles.getFileNameList(imagesDirectory);
-		
+
 		PlayerFrame frame = new PlayerFrame();
 		frame.setAvailableSongsList(songNames);
 		frame.setAvailableImages(imageNames);
-		
+
 		frame.onGoLiveButtonClicked((Void) -> {
-		    //System.out.println("Go Live button clicked!");
-			//TODO: Reference the code below to start livestream.
+			String streamKey = frame.getStreamKey();
+			String platform = frame.getSelectedPlatform().toLowerCase();
+
+			LivestreamPlayer.setOption("livestream", platform);
+			LivestreamPlayer.setOption("stream_key", streamKey);
+			
+			AtomicBoolean shouldContinueRunning = new AtomicBoolean(true);
+
+			// Add a shutdown hook to set the flag to false when the program exits
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					shouldContinueRunning.set(false);
+					LivestreamPlayer.stop();
+				}
+			});
+
+			while (shouldContinueRunning.get()) {
+				String songFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
+				String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
+				String songName = "";
+				if (SystemInfo.osType().equals("Windows")) {
+					songName = songFile.substring(songFile.lastIndexOf("songs\\") + 6, songFile.lastIndexOf("."));
+				} else { // If linux..
+					songName = songFile.substring(songFile.lastIndexOf("songs/") + 6, songFile.lastIndexOf("."));
+				}
+
+				LivestreamPlayer.livestreamVideo(songFile, imageFile, songName);
+			}
 		});
 	}
 
+	@Deprecated
 	public void start(Stage stage) throws Exception {
 		boolean validNumber = false;
 
@@ -69,12 +97,12 @@ public class MusicLivestreamBot {
 		livestreamKey = scanner.next();
 
 		System.out.println("To start livestream press ENTER");
-		
+
 		try {
 			System.in.read();
 		} catch (Exception e) {
 		}
-		
+
 		scanner.close();
 
 		LivestreamPlayer.setOption("livestream", livestreamOption);
