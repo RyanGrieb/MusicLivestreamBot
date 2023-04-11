@@ -221,6 +221,10 @@ public class PlayerFrame extends JFrame {
 							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
+				
+				if(!SystemFiles.folderExists("./data")) {
+					SystemFiles.createFolder("./data");
+				}
 
 				try {
 					JSONObject jsonFile = SystemFiles.getJSONFromFile("./data/streams.json");

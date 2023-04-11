@@ -69,6 +69,17 @@ public class SystemFiles {
 		createJSONFile(fileName, fileJson);
 	}
 
+	public static boolean folderExists(String folderPath) {
+	    File folder = new File(folderPath);
+	    return folder.exists() && folder.isDirectory();
+	}
+
+	
+	public static boolean createFolder(String folderPath) {
+	    File folder = new File(folderPath);
+	    return folder.mkdirs();
+	}
+	
 	private static void mergeJSONObjects(JSONObject originalJson, JSONObject newJson) {
 		for (String key : newJson.keySet()) {
 			originalJson.put(key, newJson.get(key));
