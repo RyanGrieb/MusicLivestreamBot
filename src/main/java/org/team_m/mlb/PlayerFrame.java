@@ -6,6 +6,7 @@ import java.awt.Panel;
 import java.awt.SystemColor;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -36,8 +37,6 @@ import javax.swing.border.TitledBorder;
 
 import org.json.JSONObject;
 import org.team_m.mlb.system.SystemFiles;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class PlayerFrame extends JFrame {
 
@@ -195,11 +194,11 @@ public class PlayerFrame extends JFrame {
 		lblNewLabel_2.setBounds(10, 384, 116, 14);
 		contentPane.add(lblNewLabel_2);
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
-		
+
 		JButton btnNewButton_1_1_1 = new JButton("Remove");
 		btnNewButton_1_1_1.setBounds(680, 7, 80, 23);
 		contentPane.add(btnNewButton_1_1_1);
-		
+
 		JButton btnNewButton_2_1 = new JButton("Add");
 		btnNewButton_2_1.setBounds(590, 7, 80, 23);
 		contentPane.add(btnNewButton_2_1);
@@ -221,8 +220,8 @@ public class PlayerFrame extends JFrame {
 							JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				
-				if(!SystemFiles.folderExists("./data")) {
+
+				if (!SystemFiles.folderExists("./data")) {
 					SystemFiles.createFolder("./data");
 				}
 
@@ -230,25 +229,13 @@ public class PlayerFrame extends JFrame {
 					JSONObject jsonFile = SystemFiles.getJSONFromFile("./data/streams.json");
 
 					if (!jsonFile.has(getSelectedPlatform().toLowerCase())) {
-						streamKey = JOptionPane.showInputDialog(null,
-								"Enter your stream key for " + getSelectedPlatform(), "No stream key found",
-								JOptionPane.WARNING_MESSAGE);
-						JSONObject platformJsonObj = new JSONObject();
-						JSONObject streamKeyJsonObj = new JSONObject();
-						streamKeyJsonObj.put("key", streamKey);
-						platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
-						SystemFiles.updateJSONFile("./data/streams.json", platformJsonObj);
+						if (!promptForStreamKey())
+							return;
 					}
-					streamKey = jsonFile.getJSONObject(getSelectedPlatform().toLowerCase()).getString("key");
 
 				} catch (FileNotFoundException e1) {
-					streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + getSelectedPlatform(),
-							"No stream key found", JOptionPane.WARNING_MESSAGE);
-					JSONObject platformJsonObj = new JSONObject();
-					JSONObject streamKeyJsonObj = new JSONObject();
-					streamKeyJsonObj.put("key", streamKey);
-					platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
-					SystemFiles.createJSONFile("./data/streams.json", platformJsonObj);
+					if (!promptForStreamKey())
+						return;
 				}
 
 				goLiveCallback.accept(null);
@@ -256,6 +243,29 @@ public class PlayerFrame extends JFrame {
 		});
 		setVisible(true);
 		setLocationRelativeTo(null); // Center window to center of screen.
+	}
+
+	public boolean promptForStreamKey() {
+		streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + getSelectedPlatform(),
+				"No stream key found", JOptionPane.WARNING_MESSAGE);
+		if (streamKey == null) {
+			return false;
+		}
+		JSONObject platformJsonObj = new JSONObject();
+		JSONObject streamKeyJsonObj = new JSONObject();
+		streamKeyJsonObj.put("key", streamKey);
+		platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
+		if (!new File("./data/streams.json").exists()) {
+			SystemFiles.createJSONFile("./data/streams.json", platformJsonObj);
+		} else {
+			try {
+				SystemFiles.updateJSONFile("./data/streams.json", platformJsonObj);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return true;
 	}
 
 	@SuppressWarnings("serial")
