@@ -36,6 +36,8 @@ import javax.swing.border.TitledBorder;
 
 import org.json.JSONObject;
 import org.team_m.mlb.system.SystemFiles;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class PlayerFrame extends JFrame {
 
@@ -55,7 +57,7 @@ public class PlayerFrame extends JFrame {
 		setResizable(false);
 		setTitle("Music Livestream Bot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 679, 530);
+		setBounds(100, 100, 786, 530);
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
@@ -143,7 +145,7 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(label);
 
 		JScrollPane scrollPane_2 = new JScrollPane();
-		scrollPane_2.setBounds(417, 36, 236, 256);
+		scrollPane_2.setBounds(427, 36, 333, 256);
 		contentPane.add(scrollPane_2);
 
 		listAvailableImages = new JList<String>();
@@ -153,22 +155,14 @@ public class PlayerFrame extends JFrame {
 		listAvailableImages.setBackground(SystemColor.menu);
 
 		JLabel lblAvailableImages = new JLabel("Available Images:");
-		lblAvailableImages.setBounds(417, 11, 143, 14);
+		lblAvailableImages.setBounds(427, 11, 143, 14);
 		contentPane.add(lblAvailableImages);
-
-		JButton btnNewButton_3 = new JButton("+");
-		btnNewButton_3.setBounds(537, 4, 41, 29);
-		contentPane.add(btnNewButton_3);
-
-		JButton btnNewButton_3_1 = new JButton("-");
-		btnNewButton_3_1.setBounds(588, 4, 41, 29);
-		contentPane.add(btnNewButton_3_1);
 
 		JPanel panel = new JPanel();
 		panel.setBorder(new TitledBorder(
 				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)),
 				"Stream Options", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
-		panel.setBounds(346, 303, 307, 155);
+		panel.setBounds(427, 308, 333, 155);
 		contentPane.add(panel);
 
 		JPanel panel_2 = new JPanel();
@@ -182,6 +176,7 @@ public class PlayerFrame extends JFrame {
 
 		radioButtonGroup = new ButtonGroup();
 		rbPlatformYouTube = new JRadioButton("Youtube");
+		rbPlatformYouTube.setSelected(true);
 		panel_1.add(rbPlatformYouTube);
 		radioButtonGroup.add(rbPlatformYouTube);
 
@@ -200,6 +195,14 @@ public class PlayerFrame extends JFrame {
 		lblNewLabel_2.setBounds(10, 384, 116, 14);
 		contentPane.add(lblNewLabel_2);
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JButton btnNewButton_1_1_1 = new JButton("Remove");
+		btnNewButton_1_1_1.setBounds(680, 7, 80, 23);
+		contentPane.add(btnNewButton_1_1_1);
+		
+		JButton btnNewButton_2_1 = new JButton("Add");
+		btnNewButton_2_1.setBounds(590, 7, 80, 23);
+		contentPane.add(btnNewButton_2_1);
 		btnGoLive.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {

@@ -1,24 +1,50 @@
 package org.team_m.mlb;
 
-import java.io.File;
-import java.util.Random;
-import java.util.Scanner;
-
+import org.team_m.mlb.system.SystemFiles;
 import org.team_m.mlb.system.SystemInfo;
 
-public class LivestreamPlayer {
+public class LivestreamPlayer implements Runnable {
 
+	private static final LivestreamPlayer instance = new LivestreamPlayer();
 	private static final String BITRATE = "5k";
 	private static final int FPS = 1;
 	private static final String QUALITY = "medium";
 	private static final String YOUTUBE_RTMP = "rtmp://a.rtmp.youtube.com/live2";
 	private static final String TWITCH_RTMP = "rtmp://dfw.contribute.live-video.net/app";
 
-	private static String streamURL;
-	private static String streamKey;
-	private static CommandRunner currentCommandRunner;
+	private String streamURL;
+	private String streamKey;
+	private CommandRunner commandRunner;
 
-	public static void livestreamVideo(String soundSource, String imageSource, String songName) {
+	public static LivestreamPlayer getInstance() {
+		return instance;
+	}
+
+	public void run() {
+		// FIXME: Run this on frame close..
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				// shouldContinueRunning.set(false);
+				// LivestreamPlayer.stop();
+			}
+		});
+
+		while (true) {
+			String songFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
+			String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
+			String songName = "";
+			if (SystemInfo.osType().equals("Windows")) {
+				songName = songFile.substring(songFile.lastIndexOf("songs\\") + 6, songFile.lastIndexOf("."));
+			} else { // If linux..
+				songName = songFile.substring(songFile.lastIndexOf("songs/") + 6, songFile.lastIndexOf("."));
+			}
+
+			livestreamVideo(songFile, imageFile, songName);
+		}
+	}
+
+	public void livestreamVideo(String soundSource, String imageSource, String songName) {
 		String ffmpegCommand = null;
 		String fontSource = null;
 
@@ -33,7 +59,7 @@ public class LivestreamPlayer {
 			break;
 		}
 
-		CommandRunner commandRunner = new CommandRunner(ffmpegCommand);
+		commandRunner = new CommandRunner(ffmpegCommand);
 		commandRunner.addArg("-y"); // Override output files (For real-time livestream)
 		commandRunner.addArg("-re"); // Use native framerate (For real-time livestream) (Prevent the music loop from
 										// skipping ahread to new song)
@@ -48,17 +74,15 @@ public class LivestreamPlayer {
 		commandRunner.addArg(String.format("-f flv %s/%s", streamURL, streamKey));
 		commandRunner.addArg("-threads " + SystemInfo.threadCount());
 		commandRunner.run();
-
-		currentCommandRunner = commandRunner;
 	}
 
-	public static void stop() {
-		if (currentCommandRunner != null) {
-			currentCommandRunner.sendStopSignal();
+	public void stop() {
+		if (commandRunner != null) {
+			commandRunner.sendStopSignal();
 		}
 	}
 
-	public static void setOption(String option, String value) {
+	public void setOption(String option, String value) {
 		switch (option) {
 		case "livestream":
 			if (value.equals("youtube")) {
@@ -81,12 +105,12 @@ public class LivestreamPlayer {
 	 * @param imagePath
 	 * @param mp3Path
 	 */
-	public static void songImageToMp4(String imagePath, String mp3Path) {
+	public void songImageToMp4(String imagePath, String mp3Path) {
 		// ffmpeg -loop 1 -i image.jpg -i one.mp3 -shortest -acodec copy -vcodec mjpeg
 		// result.mkv
 	}
 
-	public static boolean isLive() {
+	public boolean isLive() {
 		// TODO: Return true if our ffmpeg process is running.
 		return false;
 	}

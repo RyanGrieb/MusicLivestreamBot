@@ -108,7 +108,7 @@ public class CommandRunner {
 	public void sendStopSignal() {
 		try {
 			// Send the 'q' character to ffmpeg
-			process.getOutputStream().write('q');
+			process.getOutputStream().write('q');	
 			process.getOutputStream().flush();
 		} catch (IOException e) {
 			e.printStackTrace();
