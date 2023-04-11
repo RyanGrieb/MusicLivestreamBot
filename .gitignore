@@ -2,4 +2,5 @@
 /songs/
 /scripts/
 /src/main/resources/scripts/*
-!/src/main/resources/scripts/.gitkeep 
+!/src/main/resources/scripts/.gitkeep
+/data/streams.json
