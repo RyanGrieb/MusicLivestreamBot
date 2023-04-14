@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import org.team_m.mlb.system.SystemFiles;
 
 public class MusicLivestreamBot {
-	
+
 	private static Thread streamThread;
-	
+
 	public static void main(String[] args) {
 		String songsDirectory = System.getProperty("user.dir") + "/songs";
 		String imagesDirectory = System.getProperty("user.dir") + "/images";
@@ -17,6 +17,11 @@ public class MusicLivestreamBot {
 		PlayerFrame frame = new PlayerFrame();
 		frame.setAvailableSongsList(songNames);
 		frame.setAvailableImages(imageNames);
+
+		LivestreamPlayer.getInstance().onSongChanged((songName) -> {
+			System.out.println("Now playing " + songName);
+			frame.setPlayingSong(songName);
+		});
 
 		frame.onGoLiveButtonClicked((Void) -> {
 			String streamKey = frame.getStreamKey();
@@ -33,6 +38,7 @@ public class MusicLivestreamBot {
 				// Stop streamThread
 				LivestreamPlayer.getInstance().stop();
 				streamThread = null;
+				frame.setPlayingSong("N/A");
 			}
 		});
 	}

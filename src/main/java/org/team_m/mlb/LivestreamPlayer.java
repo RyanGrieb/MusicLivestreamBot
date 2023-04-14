@@ -1,6 +1,7 @@
 package org.team_m.mlb;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.team_m.mlb.system.SystemFiles;
 import org.team_m.mlb.system.SystemInfo;
@@ -18,6 +19,7 @@ public class LivestreamPlayer implements Runnable {
 	private String streamKey;
 	private CommandRunner commandRunner;
 	private final AtomicBoolean running = new AtomicBoolean(false);
+	private Consumer<String> onSongChangedCallback;
 
 	public static LivestreamPlayer getInstance() {
 		return instance;
@@ -34,6 +36,10 @@ public class LivestreamPlayer implements Runnable {
 				songName = songFile.substring(songFile.lastIndexOf("songs\\") + 6, songFile.lastIndexOf("."));
 			} else { // If linux..
 				songName = songFile.substring(songFile.lastIndexOf("songs/") + 6, songFile.lastIndexOf("."));
+			}
+
+			if (onSongChangedCallback != null) {
+				onSongChangedCallback.accept(songName);
 			}
 
 			livestreamVideo(songFile, imageFile, songName);
@@ -74,7 +80,7 @@ public class LivestreamPlayer implements Runnable {
 
 	public void stop() {
 		running.set(false);
-		
+
 		if (commandRunner != null) {
 			commandRunner.sendStopSignal();
 		}
@@ -109,7 +115,10 @@ public class LivestreamPlayer implements Runnable {
 	}
 
 	public boolean isLive() {
-		// TODO: Return true if our ffmpeg process is running.
-		return false;
+		return running.get();
+	}
+
+	public void onSongChanged(Consumer<String> callback) {
+		this.onSongChangedCallback = callback;
 	}
 }

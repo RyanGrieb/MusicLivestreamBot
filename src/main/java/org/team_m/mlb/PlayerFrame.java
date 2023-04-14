@@ -52,6 +52,7 @@ public class PlayerFrame extends JFrame {
 	private JRadioButton rbPlatformTwitch;
 	private String streamKey;
 	private JButton btnGoLive;
+	private JTextArea txtCurrentlyPlaying;
 
 	public PlayerFrame() {
 		setResizable(false);
@@ -132,13 +133,13 @@ public class PlayerFrame extends JFrame {
 		btnNewButton_2.setBounds(153, 155, 116, 23);
 		contentPane.add(btnNewButton_2);
 
-		JTextArea txtrCurrentlyPlaying = new JTextArea();
-		txtrCurrentlyPlaying.setBackground(UIManager.getColor("Button.background"));
-		txtrCurrentlyPlaying.setEditable(false);
-		txtrCurrentlyPlaying.setLineWrap(true);
-		txtrCurrentlyPlaying.setText("Currently Playing:\r\nN/A");
-		txtrCurrentlyPlaying.setBounds(10, 303, 326, 70);
-		contentPane.add(txtrCurrentlyPlaying);
+		txtCurrentlyPlaying = new JTextArea();
+		txtCurrentlyPlaying.setBackground(UIManager.getColor("Button.background"));
+		txtCurrentlyPlaying.setEditable(false);
+		txtCurrentlyPlaying.setLineWrap(true);
+		txtCurrentlyPlaying.setText("Currently Playing:\r\nN/A");
+		txtCurrentlyPlaying.setBounds(10, 303, 326, 70);
+		contentPane.add(txtCurrentlyPlaying);
 
 		JLabel label = new JLabel("New label");
 		label.setBounds(394, 384, -241, 39);
@@ -190,11 +191,6 @@ public class PlayerFrame extends JFrame {
 		btnGoLive = new JButton("Start Stream");
 		btnGoLive.setBounds(10, 404, 116, 54);
 		contentPane.add(btnGoLive);
-
-		JLabel lblNewLabel_2 = new JLabel("Currently: Not Live");
-		lblNewLabel_2.setBounds(10, 384, 116, 14);
-		contentPane.add(lblNewLabel_2);
-		lblNewLabel_2.setHorizontalAlignment(SwingConstants.CENTER);
 
 		JButton btnNewButton_1_1_1 = new JButton("Remove");
 		btnNewButton_1_1_1.setBounds(680, 7, 80, 23);
@@ -319,6 +315,14 @@ public class PlayerFrame extends JFrame {
 	}
 
 	public String getStreamKey() {
+		if (streamKey == null) {
+			try {
+				streamKey = SystemFiles.getJSONFromFile("./data/streams.json")
+						.getJSONObject(getSelectedPlatform().toLowerCase()).getString("key");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 		return streamKey;
 	}
 
@@ -326,7 +330,11 @@ public class PlayerFrame extends JFrame {
 		if (btnGoLive.getText().equals("Start Stream")) {
 			return true;
 		}
-		
+
 		return false;
+	}
+
+	public void setPlayingSong(String songName) {
+		txtCurrentlyPlaying.setText("Currently Playing:\r\n" + songName);
 	}
 }
