@@ -1,5 +1,7 @@
 package org.team_m.mlb;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.team_m.mlb.system.SystemFiles;
 import org.team_m.mlb.system.SystemInfo;
 
@@ -15,22 +17,16 @@ public class LivestreamPlayer implements Runnable {
 	private String streamURL;
 	private String streamKey;
 	private CommandRunner commandRunner;
+	private final AtomicBoolean running = new AtomicBoolean(false);
 
 	public static LivestreamPlayer getInstance() {
 		return instance;
 	}
 
 	public void run() {
-		// FIXME: Run this on frame close..
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				// shouldContinueRunning.set(false);
-				// LivestreamPlayer.stop();
-			}
-		});
+		running.set(true);
 
-		while (true) {
+		while (running.get()) {
 			String songFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
 			String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
 			String songName = "";
@@ -77,6 +73,8 @@ public class LivestreamPlayer implements Runnable {
 	}
 
 	public void stop() {
+		running.set(false);
+		
 		if (commandRunner != null) {
 			commandRunner.sendStopSignal();
 		}

@@ -51,6 +51,7 @@ public class PlayerFrame extends JFrame {
 	private JRadioButton rbPlatformYouTube;
 	private JRadioButton rbPlatformTwitch;
 	private String streamKey;
+	private JButton btnGoLive;
 
 	public PlayerFrame() {
 		setResizable(false);
@@ -186,7 +187,7 @@ public class PlayerFrame extends JFrame {
 		JSeparator separator = new JSeparator();
 		panel.add(separator);
 
-		JButton btnGoLive = new JButton("Go Live");
+		btnGoLive = new JButton("Start Stream");
 		btnGoLive.setBounds(10, 404, 116, 54);
 		contentPane.add(btnGoLive);
 
@@ -239,6 +240,12 @@ public class PlayerFrame extends JFrame {
 				}
 
 				goLiveCallback.accept(null);
+				if (btnGoLive.getText().equals("Start Stream")) {
+					btnGoLive.setText("End Stream");
+				} else {
+					btnGoLive.setText("Start Stream");
+				}
+
 			}
 		});
 		setVisible(true);
@@ -313,5 +320,13 @@ public class PlayerFrame extends JFrame {
 
 	public String getStreamKey() {
 		return streamKey;
+	}
+
+	public boolean getStreamState() {
+		if (btnGoLive.getText().equals("Start Stream")) {
+			return true;
+		}
+		
+		return false;
 	}
 }

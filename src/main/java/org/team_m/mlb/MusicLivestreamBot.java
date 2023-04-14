@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import org.team_m.mlb.system.SystemFiles;
 
 public class MusicLivestreamBot {
-
+	
+	private static Thread streamThread;
+	
 	public static void main(String[] args) {
 		String songsDirectory = System.getProperty("user.dir") + "/songs";
 		String imagesDirectory = System.getProperty("user.dir") + "/images";
@@ -19,12 +21,19 @@ public class MusicLivestreamBot {
 		frame.onGoLiveButtonClicked((Void) -> {
 			String streamKey = frame.getStreamKey();
 			String platform = frame.getSelectedPlatform().toLowerCase();
+			boolean streamState = frame.getStreamState();
 
-			LivestreamPlayer.getInstance().setOption("livestream", platform);
-			LivestreamPlayer.getInstance().setOption("stream_key", streamKey);
+			if (streamState) {
+				LivestreamPlayer.getInstance().setOption("livestream", platform);
+				LivestreamPlayer.getInstance().setOption("stream_key", streamKey);
 
-			Thread thread = new Thread(LivestreamPlayer.getInstance());
-			thread.start();
+				streamThread = new Thread(LivestreamPlayer.getInstance());
+				streamThread.start();
+			} else {
+				// Stop streamThread
+				LivestreamPlayer.getInstance().stop();
+				streamThread = null;
+			}
 		});
 	}
 }
