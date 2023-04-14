@@ -346,7 +346,25 @@ public class PlayerFrame extends JFrame {
 				if (listLivestreamPlaylist.getSelectedIndex() < 1)
 					return;
 
-				// setJlistValues(listLivestreamPlaylist,new ArrayList<String>());
+				int newIndex = listLivestreamPlaylist.getSelectedIndex() - 1;
+				// So we just need to swap the two string here...
+				ArrayList<String> updatedSongs = new ArrayList<String>();
+				ListModel<String> model = listLivestreamPlaylist.getModel();
+				String oldSong = model.getElementAt(newIndex);
+				String newSong = model.getElementAt(listLivestreamPlaylist.getSelectedIndex());
+
+				for (int i = 0; i < model.getSize(); i++) {
+					if (i == newIndex) {
+						updatedSongs.add(newSong);
+					} else if (i == listLivestreamPlaylist.getSelectedIndex()) {
+						updatedSongs.add(oldSong);
+					} else {
+						updatedSongs.add(model.getElementAt(i));
+					}
+				}
+
+				setJListValues(listLivestreamPlaylist, updatedSongs);
+				listLivestreamPlaylist.setSelectedIndex(newIndex);
 			}
 		});
 		btnPlaylistUp.setFont(new Font("Tahoma", Font.PLAIN, 16));
@@ -354,6 +372,33 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(btnPlaylistUp);
 
 		JButton btnPlaylistDown = new JButton("↓");
+		btnPlaylistDown.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (listLivestreamPlaylist.getSelectedIndex() >= listLivestreamPlaylist.getModel().getSize() - 1)
+					return;
+
+				int newIndex = listLivestreamPlaylist.getSelectedIndex() + 1;
+				// So we just need to swap the two string here...
+				ArrayList<String> updatedSongs = new ArrayList<String>();
+				ListModel<String> model = listLivestreamPlaylist.getModel();
+				String oldSong = model.getElementAt(newIndex);
+				String newSong = model.getElementAt(listLivestreamPlaylist.getSelectedIndex());
+
+				for (int i = 0; i < model.getSize(); i++) {
+					if (i == newIndex) {
+						updatedSongs.add(newSong);
+					} else if (i == listLivestreamPlaylist.getSelectedIndex()) {
+						updatedSongs.add(oldSong);
+					} else {
+						updatedSongs.add(model.getElementAt(i));
+					}
+				}
+
+				setJListValues(listLivestreamPlaylist, updatedSongs);
+				listLivestreamPlaylist.setSelectedIndex(newIndex);
+			}
+		});
 		btnPlaylistDown.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnPlaylistDown.setBounds(417, 250, 42, 42);
 		contentPane.add(btnPlaylistDown);
