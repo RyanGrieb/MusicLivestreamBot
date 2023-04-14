@@ -1,5 +1,6 @@
 package org.team_m.mlb;
 
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -20,6 +21,9 @@ public class LivestreamPlayer implements Runnable {
 	private CommandRunner commandRunner;
 	private final AtomicBoolean running = new AtomicBoolean(false);
 	private Consumer<String> onSongChangedCallback;
+	private ArrayList<String> songPlaylist;
+	private int currentSongIndex = 0;
+	private float audioVolume = 1;
 
 	public static LivestreamPlayer getInstance() {
 		return instance;
@@ -29,20 +33,21 @@ public class LivestreamPlayer implements Runnable {
 		running.set(true);
 
 		while (running.get()) {
-			String songFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/songs", 0);
 			String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
-			String songName = "";
-			if (SystemInfo.osType().equals("Windows")) {
-				songName = songFile.substring(songFile.lastIndexOf("songs\\") + 6, songFile.lastIndexOf("."));
-			} else { // If linux..
-				songName = songFile.substring(songFile.lastIndexOf("songs/") + 6, songFile.lastIndexOf("."));
-			}
+			String rawSongName = songPlaylist.get(currentSongIndex);
+			String songFile = System.getProperty("user.dir") + "/songs/" + rawSongName;
+			String songName = rawSongName.substring(0, rawSongName.lastIndexOf(".mp3"));
 
 			if (onSongChangedCallback != null) {
 				onSongChangedCallback.accept(songName);
 			}
 
 			livestreamVideo(songFile, imageFile, songName);
+			// Song has finished, increase songIndex to loop through our playlist
+			currentSongIndex++;
+			if (currentSongIndex >= songPlaylist.size()) {
+				currentSongIndex = 0;
+			}
 		}
 	}
 
@@ -66,15 +71,19 @@ public class LivestreamPlayer implements Runnable {
 		commandRunner.addArg("-re"); // Use native framerate (For real-time livestream) (Prevent the music loop from
 										// skipping ahread to new song)
 		commandRunner.addArg("-loop 1 -i \"" + imageSource + "\""); // Display static image
-		commandRunner.addArg(String.format("-i \"%s\"", soundSource));
-		commandRunner.addArg("-c:v libx264 -preset veryfast -b:v 500k -maxrate 500k -bufsize 1000k");
+		commandRunner.addArg(String.format("-i \"%s\"", soundSource)); // Play mp3 sound source
+		commandRunner.addArg(String.format("-af \"volume=%s\"", audioVolume)); // Set a custom volume
+		commandRunner.addArg("-c:v libx264 -preset veryfast -b:v 500k -maxrate 500k -bufsize 1000k"); // Define preset
+																										// render
+																										// options
 		commandRunner.addArg("-framerate 25 -g 50 -keyint_min 25 -shortest");
 		commandRunner.addArg("-c:a aac -b:a 128k -ar 44100");
 		commandRunner.addArg(String.format(
 				"-vf \"format=yuv420p,pad=ceil(iw/2)*2:ceil(ih/2)*2,drawtext=text='%s':fontfile='%s':fontsize=24:fontcolor=white:x=10:y=20\"",
-				songName, fontSource));
-		commandRunner.addArg(String.format("-f flv %s/%s", streamURL, streamKey));
-		commandRunner.addArg("-threads " + SystemInfo.threadCount());
+				songName, fontSource)); // Display song name, top left corner.
+		commandRunner.addArg(String.format("-f flv %s/%s", streamURL, streamKey)); // Pass stream url & key to
+																					// livestream video
+		commandRunner.addArg("-threads " + SystemInfo.threadCount()); // Utilize all system threads
 		commandRunner.run();
 	}
 
@@ -86,7 +95,7 @@ public class LivestreamPlayer implements Runnable {
 		}
 	}
 
-	public void setOption(String option, String value) {
+	public void setOption(String option, Object value) {
 		switch (option) {
 		case "livestream":
 			if (value.equals("youtube")) {
@@ -98,8 +107,13 @@ public class LivestreamPlayer implements Runnable {
 
 			break;
 		case "stream_key":
-			streamKey = value;
+			streamKey = (String) value;
 			break;
+		case "playlist":
+			songPlaylist = (ArrayList<String>) value;
+			break;
+		case "volume":
+			audioVolume = (float) value;
 		}
 	}
 

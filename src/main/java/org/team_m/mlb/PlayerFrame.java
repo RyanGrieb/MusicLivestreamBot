@@ -2,12 +2,16 @@ package org.team_m.mlb;
 
 import java.awt.Color;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Panel;
 import java.awt.SystemColor;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -16,6 +20,7 @@ import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -27,15 +32,19 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
-import javax.swing.SwingConstants;
+import javax.swing.ListModel;
 import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.json.JSONObject;
+import org.team_m.mlb.system.AudioFileFilter;
 import org.team_m.mlb.system.SystemFiles;
 
 public class PlayerFrame extends JFrame {
@@ -45,14 +54,14 @@ public class PlayerFrame extends JFrame {
 
 	private JList<String> listAvailableSongs;
 	private JList<String> listAvailableImages;
+	private JList<String> listLivestreamPlaylist;
 	private Consumer<Void> goLiveCallback;
 
 	private ButtonGroup radioButtonGroup;
-	private JRadioButton rbPlatformYouTube;
-	private JRadioButton rbPlatformTwitch;
 	private String streamKey;
 	private JButton btnGoLive;
 	private JTextArea txtCurrentlyPlaying;
+	private JLabel volumeLabel;
 
 	public PlayerFrame() {
 		setResizable(false);
@@ -73,6 +82,11 @@ public class PlayerFrame extends JFrame {
 		mnNewMenu.add(mnNewMenu_1);
 
 		JMenuItem mntmNewMenuItem_2 = new JMenuItem("From Files...");
+		mntmNewMenuItem_2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				importSongFromFiles();
+			}
+		});
 		mnNewMenu_1.add(mntmNewMenuItem_2);
 
 		JMenuItem mntmNewMenuItem_1 = new JMenuItem("From Youtube");
@@ -104,10 +118,34 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(lblNewLabel);
 
 		JButton btnNewButton = new JButton("Import Song");
+		btnNewButton.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				importSongFromFiles();
+			}
+		});
 		btnNewButton.setBounds(153, 7, 116, 23);
 		contentPane.add(btnNewButton);
 
 		JButton btnNewButton_1 = new JButton("Remove Song");
+		btnNewButton_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (listAvailableSongs.getSelectedIndex() < 0) {
+					JOptionPane.showMessageDialog(null, "Please select/click a song in 'available songs' to remove.",
+							"Error: No song selected", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				int dialogResult = JOptionPane.showConfirmDialog(null,
+						"Are you sure you want to delete:\n" + listAvailableSongs.getSelectedValue(), "Confirmation",
+						JOptionPane.YES_NO_OPTION);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					SystemFiles.removeFileByName("./songs", listAvailableSongs.getSelectedValue());
+					updateAvailableSongs();
+				}
+			}
+		});
 		btnNewButton_1.setBounds(291, 7, 116, 23);
 		contentPane.add(btnNewButton_1);
 
@@ -115,7 +153,7 @@ public class PlayerFrame extends JFrame {
 		scrollPane_1.setBounds(10, 189, 397, 103);
 		contentPane.add(scrollPane_1);
 
-		JList<?> listLivestreamPlaylist = new JList<Object>();
+		listLivestreamPlaylist = new JList<String>();
 		scrollPane_1.setViewportView(listLivestreamPlaylist);
 		listLivestreamPlaylist.setValueIsAdjusting(true);
 		listLivestreamPlaylist.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -126,10 +164,53 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(lblNewLabel_1);
 
 		JButton btnNewButton_1_1 = new JButton("Remove Song");
+		btnNewButton_1_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+				if (listLivestreamPlaylist.getSelectedIndex() < 0) {
+					// Alert user to select a song from available songs
+					JOptionPane.showMessageDialog(null, "Please select/click a song in 'song playlist' to remove.",
+							"Error: No song selected", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				removeJListElement(listLivestreamPlaylist, listLivestreamPlaylist.getSelectedIndex());
+				listLivestreamPlaylist.updateUI();
+			}
+		});
 		btnNewButton_1_1.setBounds(291, 155, 116, 23);
 		contentPane.add(btnNewButton_1_1);
 
 		JButton btnNewButton_2 = new JButton("Add Song");
+		btnNewButton_2.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+
+				if (listAvailableSongs.getSelectedIndex() < 0) {
+					// Alert user to select a song from available songs
+					JOptionPane.showMessageDialog(null, "Please select/click an available song.",
+							"Error: No song selected", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				if (jListHasValue(listLivestreamPlaylist, listAvailableSongs.getSelectedValue())) {
+					JOptionPane.showMessageDialog(null, "This song is already added.", "Error: Song already exists",
+							JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				ArrayList<String> songs = new ArrayList<String>();
+
+				ListModel<String> model = listLivestreamPlaylist.getModel();
+				for (int i = 0; i < model.getSize(); i++) {
+					songs.add(model.getElementAt(i));
+				}
+
+				songs.add(listAvailableSongs.getSelectedValue());
+
+				setJListValues(listLivestreamPlaylist, songs);
+			}
+		});
 		btnNewButton_2.setBounds(153, 155, 116, 23);
 		contentPane.add(btnNewButton_2);
 
@@ -146,7 +227,7 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(label);
 
 		JScrollPane scrollPane_2 = new JScrollPane();
-		scrollPane_2.setBounds(427, 36, 333, 256);
+		scrollPane_2.setBounds(477, 36, 283, 256);
 		contentPane.add(scrollPane_2);
 
 		listAvailableImages = new JList<String>();
@@ -155,8 +236,8 @@ public class PlayerFrame extends JFrame {
 		listAvailableImages.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		listAvailableImages.setBackground(SystemColor.menu);
 
-		JLabel lblAvailableImages = new JLabel("Available Images:");
-		lblAvailableImages.setBounds(427, 11, 143, 14);
+		JLabel lblAvailableImages = new JLabel("Images:");
+		lblAvailableImages.setBounds(477, 11, 80, 14);
 		contentPane.add(lblAvailableImages);
 
 		JPanel panel = new JPanel();
@@ -165,27 +246,60 @@ public class PlayerFrame extends JFrame {
 				"Stream Options", TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
 		panel.setBounds(427, 308, 333, 155);
 		contentPane.add(panel);
+		panel.setLayout(null);
 
-		JPanel panel_2 = new JPanel();
-		panel.add(panel_2);
-		panel_2.setToolTipText("");
-		panel_2.setBorder(new TitledBorder(null, "Platforms", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		panel_2.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		JPanel panel_2_1 = new JPanel();
+		panel_2_1.setBounds(6, 16, 159, 133);
+		panel_2_1.setToolTipText("");
+		panel_2_1.setBorder(new TitledBorder(null, "Platforms", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		panel.add(panel_2_1);
+		panel_2_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 
-		Panel panel_1 = new Panel();
-		panel_2.add(panel_1);
+		Panel panel_1_1 = new Panel();
+		panel_2_1.add(panel_1_1);
 
 		radioButtonGroup = new ButtonGroup();
-		rbPlatformYouTube = new JRadioButton("Youtube");
-		rbPlatformYouTube.setSelected(true);
-		panel_1.add(rbPlatformYouTube);
-		radioButtonGroup.add(rbPlatformYouTube);
 
-		rbPlatformTwitch = new JRadioButton("Twitch");
-		panel_1.add(rbPlatformTwitch);
-		radioButtonGroup.add(rbPlatformTwitch);
+		JRadioButton rbPlatformYouTube_1 = new JRadioButton("Youtube");
+		rbPlatformYouTube_1.setSelected(true);
+		panel_1_1.add(rbPlatformYouTube_1);
+
+		JRadioButton rbPlatformTwitch_1 = new JRadioButton("Twitch");
+		panel_1_1.add(rbPlatformTwitch_1);
+		radioButtonGroup.add(rbPlatformYouTube_1);
+		radioButtonGroup.add(rbPlatformTwitch_1);
+
+		JPanel panel_2 = new JPanel();
+		panel_2.setBounds(165, 16, 161, 133);
+		panel.add(panel_2);
+		panel_2.setToolTipText("");
+		panel_2.setBorder(new TitledBorder(
+				new EtchedBorder(EtchedBorder.LOWERED, new Color(255, 255, 255), new Color(160, 160, 160)), "Audio",
+				TitledBorder.LEADING, TitledBorder.TOP, null, new Color(0, 0, 0)));
+		panel_2.setLayout(null);
+
+		JSlider volumeSlider = new JSlider();
+		volumeSlider.setValue(100);
+		volumeSlider.setBounds(10, 40, 141, 26);
+
+		volumeSlider.addChangeListener(new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				JSlider source = (JSlider) e.getSource();
+				// if (!source.getValueIsAdjusting()) {
+				int value = source.getValue();
+				volumeLabel.setText("Volume: " + Integer.toString(value) + "%");
+				LivestreamPlayer.getInstance().setOption("volume", (float) value / 100);
+				// }
+			}
+		});
+		panel_2.add(volumeSlider);
+
+		volumeLabel = new JLabel("Volume: 100%");
+		volumeLabel.setBounds(10, 26, 141, 14);
+		panel_2.add(volumeLabel);
 
 		JSeparator separator = new JSeparator();
+		separator.setBounds(326, 16, 0, 133);
 		panel.add(separator);
 
 		btnGoLive = new JButton("Start Stream");
@@ -199,6 +313,25 @@ public class PlayerFrame extends JFrame {
 		JButton btnNewButton_2_1 = new JButton("Add");
 		btnNewButton_2_1.setBounds(590, 7, 80, 23);
 		contentPane.add(btnNewButton_2_1);
+
+		JButton btnPlaylistUp = new JButton("↑");
+		btnPlaylistUp.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (listLivestreamPlaylist.getSelectedIndex() < 1)
+					return;
+
+				// setJlistValues(listLivestreamPlaylist,new ArrayList<String>());
+			}
+		});
+		btnPlaylistUp.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		btnPlaylistUp.setBounds(417, 189, 42, 42);
+		contentPane.add(btnPlaylistUp);
+
+		JButton btnPlaylistDown = new JButton("↓");
+		btnPlaylistDown.setFont(new Font("Tahoma", Font.PLAIN, 16));
+		btnPlaylistDown.setBounds(417, 250, 42, 42);
+		contentPane.add(btnPlaylistDown);
 		btnGoLive.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -213,8 +346,14 @@ public class PlayerFrame extends JFrame {
 				}
 
 				if (noPlatform) {
-					JOptionPane.showMessageDialog(null, "Please select a streaming platform.", "Error",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Please select a streaming platform.",
+							"Error: No stream platform", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				if (listLivestreamPlaylist.getModel().getSize() < 1) {
+					JOptionPane.showMessageDialog(null, "Please add songs to the playlist.",
+							"Error: No songs in playlist", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 
@@ -237,15 +376,34 @@ public class PlayerFrame extends JFrame {
 
 				goLiveCallback.accept(null);
 				if (btnGoLive.getText().equals("Start Stream")) {
+					volumeSlider.setEnabled(false);
 					btnGoLive.setText("End Stream");
 				} else {
+					volumeSlider.setEnabled(true);
 					btnGoLive.setText("Start Stream");
 				}
 
 			}
 		});
+
+		// Update available songs & images
+		updateAvailableSongs();
+		updateAvailableImages();
+
 		setVisible(true);
 		setLocationRelativeTo(null); // Center window to center of screen.
+	}
+
+	private void updateAvailableImages() {
+		String imagesDirectory = System.getProperty("user.dir") + "/images";
+		ArrayList<String> imageNames = SystemFiles.getFileNameList(imagesDirectory);
+		setJListValues(this.listAvailableImages, imageNames);
+	}
+
+	private void updateAvailableSongs() {
+		String songsDirectory = System.getProperty("user.dir") + "/songs";
+		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory);
+		setJListValues(this.listAvailableSongs, songNames);
 	}
 
 	public boolean promptForStreamKey() {
@@ -272,9 +430,9 @@ public class PlayerFrame extends JFrame {
 	}
 
 	@SuppressWarnings("serial")
-	public void setAvailableSongsList(ArrayList<String> songNames) {
-		String[] values = songNames.toArray(new String[songNames.size()]); // convert ArrayList to array
-		listAvailableSongs.setModel(new AbstractListModel<String>() {
+	public void setJListValues(JList<String> jList, ArrayList<String> stringArrayList) {
+		String[] values = stringArrayList.toArray(new String[stringArrayList.size()]); // convert ArrayList to array
+		jList.setModel(new AbstractListModel<String>() {
 			public int getSize() {
 				return values.length;
 			}
@@ -285,17 +443,26 @@ public class PlayerFrame extends JFrame {
 		});
 	}
 
-	public void setAvailableImages(ArrayList<String> imageNames) {
-		String[] values = imageNames.toArray(new String[imageNames.size()]); // convert ArrayList to array
-		listAvailableImages.setModel(new AbstractListModel<String>() {
-			public int getSize() {
-				return values.length;
-			}
+	public void removeJListElement(JList<String> jList, int index) {
+		ArrayList<String> stringArrayList = new ArrayList<String>();
+		for (int i = 0; i < jList.getModel().getSize(); i++) {
+			if (i == index)
+				continue;
 
-			public String getElementAt(int index) {
-				return values[index];
+			stringArrayList.add(jList.getModel().getElementAt(i));
+		}
+
+		setJListValues(jList, stringArrayList);
+	}
+
+	public boolean jListHasValue(JList<String> jList, String value) {
+		ListModel<String> model = jList.getModel();
+		for (int i = 0; i < model.getSize(); i++) {
+			if (model.getElementAt(i).equals(value)) {
+				return true;
 			}
-		});
+		}
+		return false;
 	}
 
 	public void onGoLiveButtonClicked(Consumer<Void> callback) {
@@ -336,5 +503,36 @@ public class PlayerFrame extends JFrame {
 
 	public void setPlayingSong(String songName) {
 		txtCurrentlyPlaying.setText("Currently Playing:\r\n" + songName);
+	}
+
+	private void importSongFromFiles() {
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setFileFilter(new AudioFileFilter());
+
+		int result = fileChooser.showOpenDialog(null);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			// The user selected a file
+			File selectedFile = fileChooser.getSelectedFile();
+			System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+			try {
+				SystemFiles.copyFileToPath(selectedFile.getAbsolutePath(), "./songs");
+				updateAvailableSongs();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	public ArrayList<String> getSongPlaylist() {
+		ArrayList<String> songs = new ArrayList<String>();
+		ListModel<String> model = listLivestreamPlaylist.getModel();
+
+		for (int i = 0; i < model.getSize(); i++) {
+			songs.add(model.getElementAt(i));
+		}
+
+		return songs;
 	}
 }

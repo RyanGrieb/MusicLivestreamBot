@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -70,16 +73,48 @@ public class SystemFiles {
 	}
 
 	public static boolean folderExists(String folderPath) {
-	    File folder = new File(folderPath);
-	    return folder.exists() && folder.isDirectory();
+		File folder = new File(folderPath);
+		return folder.exists() && folder.isDirectory();
 	}
 
-	
 	public static boolean createFolder(String folderPath) {
-	    File folder = new File(folderPath);
-	    return folder.mkdirs();
+		File folder = new File(folderPath);
+		return folder.mkdirs();
 	}
-	
+
+	public static void copyFileToPath(String sourceFilePath, String targetDirectoryPath) throws IOException {
+		File sourceFile = new File(sourceFilePath);
+		Path targetDirectory = Paths.get(targetDirectoryPath);
+
+		// Create the target directory if it doesn't exist
+		if (!Files.exists(targetDirectory)) {
+			Files.createDirectories(targetDirectory);
+		}
+
+		// Get the target file path by appending the source file name to the target
+		// directory path
+		Path targetFilePath = targetDirectory.resolve(sourceFile.getName());
+
+		// Copy the file to the target directory
+		Files.copy(sourceFile.toPath(), targetFilePath);
+	}
+
+	public static void removeFileByName(String directoryPath, String fileName) {
+		File directory = new File(directoryPath);
+		File file = new File(directory, fileName);
+
+		if (file.exists()) {
+			boolean result = file.delete();
+			if (result) {
+				System.out.println("File deleted successfully");
+			} else {
+				System.out.println("Failed to delete the file");
+			}
+		} else {
+			System.out.println("File not found in the directory");
+		}
+	}
+
 	private static void mergeJSONObjects(JSONObject originalJson, JSONObject newJson) {
 		for (String key : newJson.keySet()) {
 			originalJson.put(key, newJson.get(key));
