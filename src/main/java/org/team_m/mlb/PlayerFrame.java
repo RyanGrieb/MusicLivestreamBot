@@ -45,6 +45,7 @@ import javax.swing.event.ChangeListener;
 
 import org.json.JSONObject;
 import org.team_m.mlb.system.AudioFileFilter;
+import org.team_m.mlb.system.ImageFileFilter;
 import org.team_m.mlb.system.SystemFiles;
 
 public class PlayerFrame extends JFrame {
@@ -307,10 +308,34 @@ public class PlayerFrame extends JFrame {
 		contentPane.add(btnGoLive);
 
 		JButton btnNewButton_1_1_1 = new JButton("Remove");
+		btnNewButton_1_1_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (listAvailableImages.getSelectedIndex() < 0) {
+					JOptionPane.showMessageDialog(null, "Please select/click an image in 'available images' to remove.",
+							"Error: No image selected", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+
+				int dialogResult = JOptionPane.showConfirmDialog(null,
+						"Are you sure you want to delete:\n" + listAvailableImages.getSelectedValue(), "Confirmation",
+						JOptionPane.YES_NO_OPTION);
+				if (dialogResult == JOptionPane.YES_OPTION) {
+					SystemFiles.removeFileByName("./images", listAvailableImages.getSelectedValue());
+					updateAvailableImages();
+				}
+			}
+		});
 		btnNewButton_1_1_1.setBounds(680, 7, 80, 23);
 		contentPane.add(btnNewButton_1_1_1);
 
 		JButton btnNewButton_2_1 = new JButton("Add");
+		btnNewButton_2_1.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				importImageFromFiles();
+			}
+		});
 		btnNewButton_2_1.setBounds(590, 7, 80, 23);
 		contentPane.add(btnNewButton_2_1);
 
@@ -514,10 +539,30 @@ public class PlayerFrame extends JFrame {
 		if (result == JFileChooser.APPROVE_OPTION) {
 			// The user selected a file
 			File selectedFile = fileChooser.getSelectedFile();
-			System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+
 			try {
 				SystemFiles.copyFileToPath(selectedFile.getAbsolutePath(), "./songs");
 				updateAvailableSongs();
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+	}
+
+	private void importImageFromFiles() {
+		final JFileChooser fileChooser = new JFileChooser();
+		fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+		fileChooser.setFileFilter(new ImageFileFilter());
+
+		int result = fileChooser.showOpenDialog(null);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			// The user selected a file
+			File selectedFile = fileChooser.getSelectedFile();
+
+			try {
+				SystemFiles.copyFileToPath(selectedFile.getAbsolutePath(), "./images");
+				updateAvailableImages();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
