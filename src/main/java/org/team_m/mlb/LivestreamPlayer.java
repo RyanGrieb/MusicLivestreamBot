@@ -22,7 +22,7 @@ public class LivestreamPlayer implements Runnable {
 	private final AtomicBoolean running = new AtomicBoolean(false);
 	private Consumer<String> onSongChangedCallback;
 	private ArrayList<String> songPlaylist;
-	private int currentSongIndex = 0;
+	private int currentSongIndex;
 	private float audioVolume = 1;
 
 	public static LivestreamPlayer getInstance() {
@@ -31,8 +31,16 @@ public class LivestreamPlayer implements Runnable {
 
 	public void run() {
 		running.set(true);
+		currentSongIndex = 0;
 
 		while (running.get()) {
+
+			// If currentSongIndex, it was triggered by skipToPreviousSong().
+			// B/c of this, we just loop back to the end of the playlist
+			if (currentSongIndex < 0) {
+				currentSongIndex = songPlaylist.size() - 1;
+			}
+
 			String imageFile = SystemFiles.getRandomFile(System.getProperty("user.dir") + "/images", 0);
 			String rawSongName = songPlaylist.get(currentSongIndex);
 			String songFile = System.getProperty("user.dir") + "/songs/" + rawSongName;
@@ -85,6 +93,22 @@ public class LivestreamPlayer implements Runnable {
 																					// livestream video
 		commandRunner.addArg("-threads " + SystemInfo.threadCount()); // Utilize all system threads
 		commandRunner.run();
+	}
+
+	public void skipToPreviousSong() {
+
+		currentSongIndex -= 2;
+
+		if (commandRunner != null) {
+			commandRunner.sendStopSignal();
+		}
+
+	}
+
+	public void skipToNextSong() {
+		if (commandRunner != null) {
+			commandRunner.sendStopSignal();
+		}
 	}
 
 	public void stop() {

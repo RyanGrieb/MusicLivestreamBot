@@ -1,6 +1,7 @@
 package org.team_m.mlb;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Panel;
@@ -19,6 +20,7 @@ import java.util.function.Consumer;
 import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -77,6 +79,11 @@ public class PlayerFrame extends JFrame {
 		menuBar.add(mnNewMenu);
 
 		JMenuItem mntmNewMenuItem = new JMenuItem("Add Image...");
+		mntmNewMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				importImageFromFiles();
+			}
+		});
 		mnNewMenu.add(mntmNewMenuItem);
 
 		JMenu mnNewMenu_1 = new JMenu("Add Song");
@@ -402,6 +409,28 @@ public class PlayerFrame extends JFrame {
 		btnPlaylistDown.setFont(new Font("Tahoma", Font.PLAIN, 16));
 		btnPlaylistDown.setBounds(417, 250, 42, 42);
 		contentPane.add(btnPlaylistDown);
+
+		JButton btnPrevSong = new JButton("< Previous Song");
+		btnPrevSong.setEnabled(false);
+		btnPrevSong.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				LivestreamPlayer.getInstance().skipToPreviousSong();
+			}
+		});
+		btnPrevSong.setBounds(136, 404, 133, 23);
+		contentPane.add(btnPrevSong);
+
+		JButton btnNextSong = new JButton("Next Song >");
+		btnNextSong.setEnabled(false);
+		btnNextSong.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				LivestreamPlayer.getInstance().skipToNextSong();
+			}
+		});
+		btnNextSong.setBounds(136, 435, 133, 23);
+		contentPane.add(btnNextSong);
 		btnGoLive.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -446,10 +475,26 @@ public class PlayerFrame extends JFrame {
 
 				goLiveCallback.accept(null);
 				if (btnGoLive.getText().equals("Start Stream")) {
+					btnNextSong.setEnabled(true);
+					btnPrevSong.setEnabled(true);
+					
 					volumeSlider.setEnabled(false);
+					btnPlaylistUp.setEnabled(false);
+					btnPlaylistDown.setEnabled(false);
+					btnNewButton_2.setEnabled(false);
+					btnNewButton_1_1.setEnabled(false);
+					
 					btnGoLive.setText("End Stream");
 				} else {
+					btnNextSong.setEnabled(false);
+					btnPrevSong.setEnabled(false);
+					
 					volumeSlider.setEnabled(true);
+					btnPlaylistUp.setEnabled(true);
+					btnPlaylistDown.setEnabled(true);
+					btnNewButton_2.setEnabled(true);
+					btnNewButton_1_1.setEnabled(true);
+					
 					btnGoLive.setText("Start Stream");
 				}
 
@@ -572,7 +617,41 @@ public class PlayerFrame extends JFrame {
 	}
 
 	public void setPlayingSong(String songName) {
+		listLivestreamPlaylist.setCellRenderer(new DefaultListCellRenderer());
 		txtCurrentlyPlaying.setText("Currently Playing:\r\n" + songName);
+
+		String rawName = songName + ".mp3";
+		ArrayList<String> updatedNames = new ArrayList<String>();
+		ListModel<String> model = listLivestreamPlaylist.getModel();
+
+		// Update * on songPlaylist
+		if (!songName.equals("N/A")) {
+
+			for (int i = 0; i < model.getSize(); i++) {
+				String elementSong = model.getElementAt(i);
+				if (elementSong.charAt(0) == '>' && !elementSong.equals(rawName)) {
+					updatedNames.add(elementSong.substring(1));
+				} else if (elementSong.charAt(0) != '>' && elementSong.equals(rawName)) {
+					updatedNames.add(">" + elementSong);
+					listLivestreamPlaylist.setCellRenderer(new BoldListCellRenderer(i));
+				} else {
+					updatedNames.add(model.getElementAt(i));
+				}
+			}
+
+			setJListValues(listLivestreamPlaylist, updatedNames);
+		} else {
+			for (int i = 0; i < model.getSize(); i++) {
+				String elementSong = model.getElementAt(i);
+				if (elementSong.charAt(0) == '>') {
+					updatedNames.add(elementSong.substring(1));
+				} else {
+					updatedNames.add(model.getElementAt(i));
+				}
+			}
+
+			setJListValues(listLivestreamPlaylist, updatedNames);
+		}
 	}
 
 	private void importSongFromFiles() {
@@ -625,4 +704,23 @@ public class PlayerFrame extends JFrame {
 
 		return songs;
 	}
+
+	private static class BoldListCellRenderer extends DefaultListCellRenderer {
+		private final int boldIndex;
+
+		public BoldListCellRenderer(int boldIndex) {
+			this.boldIndex = boldIndex;
+		}
+
+		@Override
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
+			Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			if (index == boldIndex) {
+				c.setFont(c.getFont().deriveFont(Font.ITALIC));
+			}
+			return c;
+		}
+	}
+
 }
