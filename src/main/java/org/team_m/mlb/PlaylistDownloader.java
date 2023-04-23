@@ -1,5 +1,9 @@
 package org.team_m.mlb;
 
+/**
+ * The PlaylistDownloader class is intended to receive a YouTube playlist URL as input, and output multiple mp3 files. 
+ *
+ */
 public class PlaylistDownloader {
 
 	// String bip = "./songs/Chris Stapleton - Tennessee Whiskey (Official

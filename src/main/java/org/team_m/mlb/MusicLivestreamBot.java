@@ -2,6 +2,11 @@ package org.team_m.mlb;
 
 import java.util.ArrayList;
 
+/**
+ * Main class for the program. Initializes the JFrame, and starts the
+ * LivestreamPlayer through our callback methods.
+ *
+ */
 public class MusicLivestreamBot {
 
 	private static Thread streamThread;

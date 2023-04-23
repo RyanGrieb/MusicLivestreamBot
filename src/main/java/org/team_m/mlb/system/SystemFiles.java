@@ -14,6 +14,10 @@ import java.util.Random;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+/**
+ * Collection of helper methods to manipulate the file system.
+ *
+ */
 public class SystemFiles {
 	/**
 	 * Selects a random file from a specified directory

@@ -4,6 +4,9 @@ import java.io.File;
 
 import javax.swing.filechooser.FileFilter;
 
+/*
+ * File-filter class for JFileChooser, where we specify only jpg and png images.
+ */
 public class ImageFileFilter extends FileFilter {
 
 	@Override

@@ -7,6 +7,12 @@ import java.util.function.Consumer;
 import org.team_m.mlb.system.SystemFiles;
 import org.team_m.mlb.system.SystemInfo;
 
+/**
+ * The LivestreamPlayer class is a Singleton Object that aggregates images and
+ * songs into a single ffmpeg commmand. We keep track of songs with a playlist,
+ * and iterate through each song one at a time.
+ *
+ */
 public class LivestreamPlayer implements Runnable {
 
 	private static final LivestreamPlayer instance = new LivestreamPlayer();

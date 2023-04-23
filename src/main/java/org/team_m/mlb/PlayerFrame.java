@@ -50,6 +50,11 @@ import org.team_m.mlb.system.AudioFileFilter;
 import org.team_m.mlb.system.ImageFileFilter;
 import org.team_m.mlb.system.SystemFiles;
 
+/**
+ * The PlayerFrame class provides a UI for the end-user to create and modify
+ * song playlists and images. This UI also displays helpful information relating
+ * to available songs, and what is currently playing.
+ */
 public class PlayerFrame extends JFrame {
 
 	private static final long serialVersionUID = -682428546878821527L;
@@ -104,6 +109,23 @@ public class PlayerFrame extends JFrame {
 		menuBar.add(mnNewMenu_2);
 
 		JMenuItem mntmNewMenuItem_3 = new JMenuItem("Edit Stream Keys...");
+		mntmNewMenuItem_3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				// Create dialog with two buttons, YouTube or Twitch
+
+				String[] options = { "Youtube", "Twitch" };
+				int selectedOption = JOptionPane.showOptionDialog(null, "Select a platform", "Edit Stream Keys",
+						JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+				if (selectedOption == 0) {
+					// YouTube option selected
+					promptForStreamKey("Youtube");
+
+				} else if (selectedOption == 1) {
+					// Twitch option selected
+					promptForStreamKey("Twitch");
+				}
+			}
+		});
 		mnNewMenu_2.add(mntmNewMenuItem_3);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -477,24 +499,24 @@ public class PlayerFrame extends JFrame {
 				if (btnGoLive.getText().equals("Start Stream")) {
 					btnNextSong.setEnabled(true);
 					btnPrevSong.setEnabled(true);
-					
+
 					volumeSlider.setEnabled(false);
 					btnPlaylistUp.setEnabled(false);
 					btnPlaylistDown.setEnabled(false);
 					btnNewButton_2.setEnabled(false);
 					btnNewButton_1_1.setEnabled(false);
-					
+
 					btnGoLive.setText("End Stream");
 				} else {
 					btnNextSong.setEnabled(false);
 					btnPrevSong.setEnabled(false);
-					
+
 					volumeSlider.setEnabled(true);
 					btnPlaylistUp.setEnabled(true);
 					btnPlaylistDown.setEnabled(true);
 					btnNewButton_2.setEnabled(true);
 					btnNewButton_1_1.setEnabled(true);
-					
+
 					btnGoLive.setText("Start Stream");
 				}
 
@@ -521,16 +543,16 @@ public class PlayerFrame extends JFrame {
 		setJListValues(this.listAvailableSongs, songNames);
 	}
 
-	public boolean promptForStreamKey() {
-		streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + getSelectedPlatform(),
-				"No stream key found", JOptionPane.WARNING_MESSAGE);
+	public boolean promptForStreamKey(String platform) {
+		streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + platform,
+				"Stream key", JOptionPane.WARNING_MESSAGE);
 		if (streamKey == null) {
 			return false;
 		}
 		JSONObject platformJsonObj = new JSONObject();
 		JSONObject streamKeyJsonObj = new JSONObject();
 		streamKeyJsonObj.put("key", streamKey);
-		platformJsonObj.put(getSelectedPlatform().toLowerCase(), streamKeyJsonObj);
+		platformJsonObj.put(platform.toLowerCase(), streamKeyJsonObj);
 		if (!new File("./data/streams.json").exists()) {
 			SystemFiles.createJSONFile("./data/streams.json", platformJsonObj);
 		} else {
@@ -542,6 +564,10 @@ public class PlayerFrame extends JFrame {
 		}
 
 		return true;
+	}
+
+	public boolean promptForStreamKey() {
+		return promptForStreamKey(getSelectedPlatform());
 	}
 
 	@SuppressWarnings("serial")

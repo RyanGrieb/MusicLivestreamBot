@@ -1,5 +1,9 @@
 package org.team_m.mlb.system;
 
+/**
+ * Collection of helper methods to access system information.
+ *
+ */
 public class SystemInfo {
 
 	public static String osType() {

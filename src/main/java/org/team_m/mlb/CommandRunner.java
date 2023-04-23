@@ -9,6 +9,14 @@ import java.util.List;
 
 import org.team_m.mlb.system.SystemInfo;
 
+/**
+ * 
+ * The CommandRunner class executes system commands and retrieves their output
+ * using ProcessBuilder. The command and its arguments are stored as a list of
+ * strings and can be modified by adding arguments. The full command can be
+ * obtained as a single string. The class also provides a way to stop and
+ * terminate the process.
+ */
 public class CommandRunner {
 
 	class PipeStream extends Thread {
@@ -108,7 +116,7 @@ public class CommandRunner {
 	public void sendStopSignal() {
 		try {
 			// Send the 'q' character to ffmpeg
-			process.getOutputStream().write('q');	
+			process.getOutputStream().write('q');
 			process.getOutputStream().flush();
 		} catch (IOException e) {
 			e.printStackTrace();
