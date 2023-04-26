@@ -2,6 +2,8 @@ package org.team_m.mlb;
 
 import java.util.ArrayList;
 
+import org.team_m.mlb.frame.PlayerFrame;
+
 /**
  * Main class for the program. Initializes the JFrame, and starts the
  * LivestreamPlayer through our callback methods.

@@ -1,4 +1,4 @@
-package org.team_m.mlb;
+package org.team_m.mlb.frame;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -46,6 +46,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.json.JSONObject;
+import org.team_m.mlb.LivestreamPlayer;
+import org.team_m.mlb.VideoConverter;
 import org.team_m.mlb.system.AudioFileFilter;
 import org.team_m.mlb.system.ImageFileFilter;
 import org.team_m.mlb.system.SystemFiles;
@@ -103,6 +105,11 @@ public class PlayerFrame extends JFrame {
 		mnNewMenu_1.add(mntmNewMenuItem_2);
 
 		JMenuItem mntmNewMenuItem_1 = new JMenuItem("From Youtube");
+		mntmNewMenuItem_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				importSongFromYouTube();
+			}
+		});
 		mnNewMenu_1.add(mntmNewMenuItem_1);
 
 		JMenu mnNewMenu_2 = new JMenu("Options");
@@ -539,13 +546,13 @@ public class PlayerFrame extends JFrame {
 
 	private void updateAvailableSongs() {
 		String songsDirectory = System.getProperty("user.dir") + "/songs";
-		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory);
+		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory, "mp3");
 		setJListValues(this.listAvailableSongs, songNames);
 	}
 
 	public boolean promptForStreamKey(String platform) {
-		streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + platform,
-				"Stream key", JOptionPane.WARNING_MESSAGE);
+		streamKey = JOptionPane.showInputDialog(null, "Enter your stream key for " + platform, "Stream key",
+				JOptionPane.WARNING_MESSAGE);
 		if (streamKey == null) {
 			return false;
 		}
@@ -698,6 +705,55 @@ public class PlayerFrame extends JFrame {
 				e1.printStackTrace();
 			}
 		}
+	}
+
+	private void importSongFromYouTube() {
+		// Provide a pop-up box where user can enter video URL
+		// Buttons should be OK, Cancel
+		String videoURL = JOptionPane.showInputDialog(null, "Enter YouTube video URL: ", "Import YouTube song",
+				JOptionPane.INFORMATION_MESSAGE);
+		if (videoURL == null) {
+			return;
+		}
+
+		Thread thread = new Thread(() -> {
+			setEnabled(false);
+			VideoDownloaderFrame downloaderFrame = new VideoDownloaderFrame();
+
+			VideoConverter.getInstance().onConvertCommadnOutput((output) -> {
+				System.out.println("!" + output);
+				String songName = null;
+
+				if (output.contains("Destination:")) {
+					songName = output.substring(output.lastIndexOf("\\") + 1, output.lastIndexOf("."));
+					downloaderFrame.setSongName(songName);
+				}
+
+				if (output.contains("download") && output.contains("% of")) {
+					String precentDone = output.substring(output.indexOf(']') + 1, output.indexOf("of"));
+					precentDone = precentDone.trim();
+					precentDone = precentDone.replace("%", "");
+					downloaderFrame.setPrecentDone(precentDone);
+				}
+			});
+
+			downloaderFrame.onCancel((Void) -> {
+				VideoConverter.getInstance().cancelConversion();
+			});
+
+			VideoConverter.getInstance().videoURLToMp3(videoURL);
+
+			downloaderFrame.setVisible(false);
+			downloaderFrame.dispose();
+
+			setAlwaysOnTop(true);
+			setAlwaysOnTop(false);
+
+			setEnabled(true);
+			updateAvailableSongs();
+		});
+
+		thread.start();
 	}
 
 	private void importImageFromFiles() {

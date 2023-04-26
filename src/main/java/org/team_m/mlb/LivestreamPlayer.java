@@ -98,7 +98,7 @@ public class LivestreamPlayer implements Runnable {
 		commandRunner.addArg(String.format("-f flv %s/%s", streamURL, streamKey)); // Pass stream url & key to
 																					// livestream video
 		commandRunner.addArg("-threads " + SystemInfo.threadCount()); // Utilize all system threads
-		commandRunner.run();
+		commandRunner.run(true);
 	}
 
 	public void skipToPreviousSong() {
@@ -106,14 +106,14 @@ public class LivestreamPlayer implements Runnable {
 		currentSongIndex -= 2;
 
 		if (commandRunner != null) {
-			commandRunner.sendStopSignal();
+			commandRunner.sendStopSignal("ffmpeg");
 		}
 
 	}
 
 	public void skipToNextSong() {
 		if (commandRunner != null) {
-			commandRunner.sendStopSignal();
+			commandRunner.sendStopSignal("ffmpeg");
 		}
 	}
 
@@ -121,7 +121,7 @@ public class LivestreamPlayer implements Runnable {
 		running.set(false);
 
 		if (commandRunner != null) {
-			commandRunner.sendStopSignal();
+			commandRunner.sendStopSignal("ffmpeg");
 		}
 	}
 
@@ -145,17 +145,6 @@ public class LivestreamPlayer implements Runnable {
 		case "volume":
 			audioVolume = (float) value;
 		}
-	}
-
-	/**
-	 * Uses ffmpeg to convert a jpg and mp3 to a mp4 file
-	 * 
-	 * @param imagePath
-	 * @param mp3Path
-	 */
-	public void songImageToMp4(String imagePath, String mp3Path) {
-		// ffmpeg -loop 1 -i image.jpg -i one.mp3 -shortest -acodec copy -vcodec mjpeg
-		// result.mkv
 	}
 
 	public boolean isLive() {

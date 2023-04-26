@@ -35,6 +35,18 @@ public class SystemFiles {
 		return files[rnd.nextInt(files.length)].getAbsolutePath();
 	}
 
+	public static ArrayList<String> getFileNameList(String directory, String extension) {
+		ArrayList<String> files = getFileNameList(directory);
+
+		for (String file : new ArrayList<>(files)) {
+			if (!file.contains("." + extension)) {
+				files.remove(file);
+			}
+		}
+
+		return files;
+	}
+
 	public static ArrayList<String> getFileNameList(String directory) {
 		File dir = new File(directory);
 		File[] fileList = dir.listFiles();

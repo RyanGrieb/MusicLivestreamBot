@@ -1,11 +1,14 @@
 package org.team_m.mlb;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.team_m.mlb.system.SystemInfo;
 
@@ -18,6 +21,8 @@ import org.team_m.mlb.system.SystemInfo;
  * terminate the process.
  */
 public class CommandRunner {
+
+	private ArrayList<Consumer<String>> commandOutputCallbacks = new ArrayList<>();
 
 	class PipeStream extends Thread {
 		InputStream is;
@@ -75,11 +80,9 @@ public class CommandRunner {
 		return args;
 	}
 
-	public void run() {
+	public void run(boolean outputPipestream) {
 		String fullCommand = command + getFullArguments();
 		System.out.println(fullCommand);
-
-		String commandOutput = null;
 
 		try {
 			String shell = null;
@@ -101,11 +104,35 @@ public class CommandRunner {
 
 			this.process = processBuilder.start();
 
-			PipeStream out = new PipeStream(process.getInputStream(), System.out);
-			PipeStream err = new PipeStream(process.getErrorStream(), System.out);
+			BufferedReader inputReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
-			out.start();
-			err.start();
+			Thread thread = new Thread(() -> {
+				String line;
+				try {
+					while ((line = inputReader.readLine()) != null) {
+						// Call the function for each line of output
+						for (Consumer<String> callback : commandOutputCallbacks) {
+							callback.accept(line);
+						}
+					}
+				} catch (IOException e) {
+					// Handle any errors that occur while reading the output
+					e.printStackTrace();
+				}
+			});
+
+			// Start the thread
+			thread.start();
+
+			if (outputPipestream) {
+				// NOTE: This is required for ffmpeg to run.
+				PipeStream out = new PipeStream(process.getInputStream(), System.out);
+				PipeStream err = new PipeStream(process.getErrorStream(), System.out);
+
+				out.start();
+				err.start();
+			}
 
 			process.waitFor();
 		} catch (Exception e) {
@@ -113,22 +140,51 @@ public class CommandRunner {
 		}
 	}
 
-	public void sendStopSignal() {
+	public void sendStopSignal(String proccessType) {
+		System.out.println("Stopping...");
+
 		try {
-			// Send the 'q' character to ffmpeg
-			process.getOutputStream().write('q');
-			process.getOutputStream().flush();
-		} catch (IOException e) {
+			switch (proccessType) {
+			case "ffmpeg":
+				// Send the 'q' character to ffmpeg
+				process.getOutputStream().write('q');
+				process.getOutputStream().flush();
+
+				// First, destroy the process normally
+				process.destroy();
+
+				// If the process is still running, force it to terminate
+				if (process.isAlive()) {
+					process.destroyForcibly();
+				}
+
+				break;
+
+			case "yt-dlp":
+				// Send the 'q' character to ffmpeg
+				process.getOutputStream().write('q');
+				process.getOutputStream().flush();
+
+				// First, destroy the process normally
+				process.destroy();
+				process.getInputStream().close();
+				process.getOutputStream().close();
+				process.getErrorStream().close();
+
+				// If the process is still running, force it to terminate
+				if (process.isAlive()) {
+					process.destroyForcibly();
+				}
+				break;
+			}
+
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
 
-		// First, destroy the process normally
-		process.destroy();
-
-		// If the process is still running, force it to terminate
-		if (process.isAlive()) {
-			process.destroyForcibly();
-		}
+	public void addOutputCallback(Consumer<String> callback) {
+		commandOutputCallbacks.add(callback);
 	}
 
 }
