@@ -158,7 +158,16 @@ public class PlayerFrame extends JFrame {
 		btnNewButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				importSongFromFiles();
+				String[] options = { "From Files", "From YouTube" };
+				int selectedOption = JOptionPane.showOptionDialog(null, "Select an import option", "Import Song",
+						JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+				if (selectedOption == 0) {
+					importSongFromFiles();
+
+				} else if (selectedOption == 1) {
+					importSongFromYouTube();
+				}
+
 			}
 		});
 		btnNewButton.setBounds(153, 7, 116, 23);
