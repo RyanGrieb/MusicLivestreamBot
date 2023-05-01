@@ -1,4 +1,4 @@
-package org.team_m.mlb;
+package org.team_m.mlb.command;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +21,9 @@ import org.team_m.mlb.system.SystemInfo;
  * terminate the process.
  */
 public class CommandRunner {
+
+	public static final String FFMPEG_COMMAND = System.getProperty("user.dir") + "\\scripts\\ffmpeg.exe";
+	public static final String YT_DLP_COMMAND = System.getProperty("user.dir") + "\\scripts\\yt-dlp.exe";
 
 	private ArrayList<Consumer<String>> commandOutputCallbacks = new ArrayList<>();
 

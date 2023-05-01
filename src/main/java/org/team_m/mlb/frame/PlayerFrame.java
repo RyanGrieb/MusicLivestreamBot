@@ -48,6 +48,7 @@ import javax.swing.event.ChangeListener;
 import org.json.JSONObject;
 import org.team_m.mlb.LivestreamPlayer;
 import org.team_m.mlb.VideoConverter;
+import org.team_m.mlb.frame.progress.VideoDownloaderFrame;
 import org.team_m.mlb.system.AudioFileFilter;
 import org.team_m.mlb.system.ImageFileFilter;
 import org.team_m.mlb.system.SystemFiles;
@@ -731,7 +732,7 @@ public class PlayerFrame extends JFrame {
 			VideoDownloaderFrame downloaderFrame = new VideoDownloaderFrame();
 
 			VideoConverter.getInstance().onConvertCommadnOutput((output) -> {
-				System.out.println("!" + output);
+				//System.out.println("!" + output);
 				String songName = null;
 
 				if (output.contains("Destination:")) {
@@ -743,7 +744,7 @@ public class PlayerFrame extends JFrame {
 					String precentDone = output.substring(output.indexOf(']') + 1, output.indexOf("of"));
 					precentDone = precentDone.trim();
 					precentDone = precentDone.replace("%", "");
-					downloaderFrame.setPrecentDone(precentDone);
+					downloaderFrame.setPrecentDone(Float.parseFloat(precentDone));
 				}
 			});
 

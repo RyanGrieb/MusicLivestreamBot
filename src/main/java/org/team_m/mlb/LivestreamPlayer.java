@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import org.team_m.mlb.command.CommandRunner;
 import org.team_m.mlb.system.SystemFiles;
 import org.team_m.mlb.system.SystemInfo;
 
@@ -66,21 +67,20 @@ public class LivestreamPlayer implements Runnable {
 	}
 
 	public void livestreamVideo(String soundSource, String imageSource, String songName) {
-		String ffmpegCommand = null;
 		String fontSource = null;
 
 		switch (SystemInfo.osType()) {
 		case "Windows":
-			ffmpegCommand = System.getProperty("user.dir") + "\\scripts\\ffmpeg.exe";
+			//ffmpegCommand = System.getProperty("user.dir") + "\\scripts\\ffmpeg.exe";
 			fontSource = System.getProperty("user.dir") + "\\fonts\\times.ttf";
 			break;
 		case "Linux":
-			ffmpegCommand = "ffmpeg"; // TODO: Display error msg box if not installed
+			//ffmpegCommand = "ffmpeg"; // TODO: Display error msg box if not installed
 			fontSource = System.getProperty("user.dir") + "/fonts/times.ttf";
 			break;
 		}
 
-		commandRunner = new CommandRunner(ffmpegCommand);
+		commandRunner = new CommandRunner(CommandRunner.FFMPEG_COMMAND);
 		commandRunner.addArg("-y"); // Override output files (For real-time livestream)
 		commandRunner.addArg("-re"); // Use native framerate (For real-time livestream) (Prevent the music loop from
 										// skipping ahread to new song)

@@ -2,6 +2,8 @@ package org.team_m.mlb;
 
 import java.util.function.Consumer;
 
+import org.team_m.mlb.command.CommandRunner;
+
 public class VideoConverter {
 
 	private static VideoConverter instance = new VideoConverter();
@@ -19,9 +21,7 @@ public class VideoConverter {
 
 	public void videoURLToMp3(String videoURL) {
 
-		String ytDLPCommand = System.getProperty("user.dir") + "\\scripts\\yt-dlp.exe";
-
-		commandRunner = new CommandRunner(ytDLPCommand);
+		commandRunner = new CommandRunner(CommandRunner.YT_DLP_COMMAND);
 		commandRunner.addArg("--output " + System.getProperty("user.dir") + "\\songs\\%(title)s.%(ext)s");
 		// commandRunner.addArg("--output " + System.getProperty("user.dir") +
 		// "\\songs.%(ext)s");

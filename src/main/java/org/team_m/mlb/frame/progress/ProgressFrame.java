@@ -1,4 +1,4 @@
-package org.team_m.mlb.frame;
+package org.team_m.mlb.frame.progress;
 
 import java.awt.Color;
 import java.awt.SystemColor;
@@ -16,20 +16,17 @@ import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 
-public class DependencyDownloaderFrame extends JFrame {
+public abstract class ProgressFrame extends JFrame {
 
 	private JPanel contentPane;
 	private JLabel lblProgress;
 	private JProgressBar progressBar;
-	private JTextArea txtrDependencyName;
+	private JTextArea txtrDisplayText;
 	private Consumer<Void> cancelCallback;
 
-	/**
-	 * Create the frame.
-	 */
-	public DependencyDownloaderFrame() {
+	public ProgressFrame(String frameTitle, String displayText) {
 		setResizable(false);
-		setTitle("Downloading Dependency");
+		setTitle(frameTitle);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 300, 188);
 		contentPane = new JPanel();
@@ -42,13 +39,13 @@ public class DependencyDownloaderFrame extends JFrame {
 		progressBar.setBounds(10, 75, 202, 26);
 		contentPane.add(progressBar);
 
-		txtrDependencyName = new JTextArea();
-		txtrDependencyName.setEditable(false);
-		txtrDependencyName.setLineWrap(true);
-		//txtrDependencyName.setText("Converting Song: ");
-		txtrDependencyName.setBackground(SystemColor.control);
-		txtrDependencyName.setBounds(10, 11, 237, 53);
-		contentPane.add(txtrDependencyName);
+		txtrDisplayText = new JTextArea();
+		txtrDisplayText.setEditable(false);
+		txtrDisplayText.setLineWrap(true);
+		txtrDisplayText.setText(displayText);
+		txtrDisplayText.setBackground(SystemColor.control);
+		txtrDisplayText.setBounds(10, 11, 237, 53);
+		contentPane.add(txtrDisplayText);
 
 		JButton btnCancel = new JButton("Cancel");
 		btnCancel.addMouseListener(new MouseAdapter() {
@@ -75,14 +72,13 @@ public class DependencyDownloaderFrame extends JFrame {
 		setVisible(true);
 	}
 
-	public void setPrecentDone(String precentDone) {
-
-		lblProgress.setText(precentDone + "%");
-		progressBar.setValue((int) Float.parseFloat(precentDone));
+	public void setPrecentDone(float precentDone) {
+		lblProgress.setText(String.format("%.0f", precentDone) + "%");
+		progressBar.setValue((int) precentDone);
 	}
 
-	public void setDependencyName(String name) {
-		txtrDependencyName.setText("Downloading: " + name);
+	public void setDisplayText(String displayText) {
+		txtrDisplayText.setText(displayText);
 	}
 
 	public void onCancel(Consumer<Void> callback) {
