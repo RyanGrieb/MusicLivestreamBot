@@ -1,4 +1,4 @@
-# Music Livestream bBot
+# Music Livestream Bot <img src="./meta/screenshots/robot-run.gif" width="64" height="64">
 
 ## What is this?
 
@@ -29,3 +29,9 @@ TODO
 ```
 TODO
 ```
+
+## Credits
+The cute robot - David Harrington
+
+
+https://opengameart.org/content/pixel-robot

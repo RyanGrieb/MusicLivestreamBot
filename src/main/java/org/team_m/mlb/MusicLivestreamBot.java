@@ -38,7 +38,7 @@ public class MusicLivestreamBot {
 			}
 
 			if (!SystemFiles.fileExists("./scripts/yt-dlp.exe")) {
-				System.out.println("Missing yt-dlpt dependency, downloading...");
+				System.out.println("Missing yt-dlp dependency, downloading...");
 
 				DependencyDownloaderFrame depDownloadFrame = new DependencyDownloaderFrame();
 				depDownloadFrame.setDependencyName("yt-dlp");
