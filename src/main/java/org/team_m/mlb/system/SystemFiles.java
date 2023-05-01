@@ -173,15 +173,21 @@ public class SystemFiles {
 		httpConn.disconnect();
 	}
 
-	public static String getFileHash(String filePath) throws IOException, NoSuchAlgorithmException {
-		byte[] fileData = Files.readAllBytes(Path.of(filePath));
-		byte[] hash = MessageDigest.getInstance("SHA-256").digest(fileData);
-
-		// Convert the hash to a hexadecimal string
+	public static String getFileHash(String filePath) {
 		StringBuilder sb = new StringBuilder();
-		for (byte b : hash) {
-			sb.append(String.format("%02x", b)); // The %02x represents a 2-digit hexadecimal. E.g. byte w/ value of 12
-													// is turned into 12 => 0c
+
+		try {
+			byte[] fileData = Files.readAllBytes(Path.of(filePath));
+			byte[] hash = MessageDigest.getInstance("SHA-256").digest(fileData);
+
+			// Convert the hash to a hexadecimal string
+			for (byte b : hash) {
+				sb.append(String.format("%02x", b)); // The %02x represents a 2-digit hexadecimal. E.g. byte w/ value of
+														// 12
+														// is turned into 12 => 0c
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return sb.toString();
 	}

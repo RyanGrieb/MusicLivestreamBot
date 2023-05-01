@@ -2,7 +2,8 @@ package org.team_m.mlb;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
+
+import javax.swing.JOptionPane;
 
 import org.team_m.mlb.command.CommandRunner;
 import org.team_m.mlb.frame.PlayerFrame;
@@ -51,52 +52,52 @@ public class MusicLivestreamBot {
 	}
 
 	private static void checkDependencies() {
-		try {
-			// Prompt the user if our external dependencies are missing (ffmpeg, yt-dlt)
-			if (!SystemFiles.fileExists("./scripts/ffmpeg.exe") || !hasValidExternalDependency("ffmpeg")) {
-				downloadDependency(
-						"https://github.com/RyanGrieb/MusicLivestreamBot/releases/download/v1.0.0/ffmpeg.exe",
-						"ffmpeg");
-			}
-
-			if (!SystemFiles.fileExists("./scripts/yt-dlp.exe") || !hasValidExternalDependency("yt-dlp")) {
-				downloadDependency(
-						"https://github.com/RyanGrieb/MusicLivestreamBot/releases/download/v1.0.0/yt-dlp.exe",
-						"yt-dlp");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		// Prompt the user if our external dependencies are missing (ffmpeg, yt-dlt)
+		if (!SystemFiles.fileExists("./scripts/ffmpeg.exe") || !hasValidExternalDependency("ffmpeg")) {
+			downloadDependency("https://github.com/RyanGrieb/MusicLivestreamBot/releases/download/v1.0.0/ffmpeg.exe",
+					"ffmpeg");
 		}
 
+		if (!SystemFiles.fileExists("./scripts/yt-dlp.exe") || !hasValidExternalDependency("yt-dlp")) {
+			downloadDependency("https://github.com/RyanGrieb/MusicLivestreamBot/releases/download/v1.0.0/yt-dlp.exe",
+					"yt-dlp");
+		}
+
+		// Check the hash again to validate we downloaded the proper executable.
+		if (!hasValidExternalDependency("ffmpeg") || !hasValidExternalDependency("yt-dlp")) {
+			JOptionPane.showMessageDialog(null,
+					"Error: Could not validate dependency hash.\n\nDo you have an outdated version?", "Error",
+					JOptionPane.ERROR_MESSAGE);
+			System.exit(1);
+		}
 	}
 
 	private static boolean hasValidExternalDependency(String dependencyName) {
-		try {
-			switch (dependencyName) {
-			case "ffmpeg":
-				return SystemFiles.getFileHash(CommandRunner.FFMPEG_COMMAND).equals(CommandRunner.FFMPEG_HASH);
-			case "yt-dlp":
-				return SystemFiles.getFileHash(CommandRunner.YT_DLP_COMMAND).equals(CommandRunner.YT_DLP_HASH);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+		switch (dependencyName) {
+		case "ffmpeg":
+			return SystemFiles.getFileHash(CommandRunner.FFMPEG_COMMAND).equals(CommandRunner.FFMPEG_HASH);
+		case "yt-dlp":
+			return SystemFiles.getFileHash(CommandRunner.YT_DLP_COMMAND).equals(CommandRunner.YT_DLP_HASH);
 		}
-
 		return false;
 	}
 
-	private static void downloadDependency(String url, String dependencyName) throws IOException {
-		System.out.println("Downloading dependency: " + dependencyName + "\nFrom: " + url);
+	private static void downloadDependency(String url, String dependencyName) {
+		try {
+			System.out.println("Downloading dependency: " + dependencyName + "\nFrom: " + url);
 
-		DependencyDownloaderFrame frame = new DependencyDownloaderFrame(dependencyName);
+			DependencyDownloaderFrame frame = new DependencyDownloaderFrame(dependencyName);
 
-		SystemFiles.downloadFromURL(url, dependencyName + ".exe", "./scripts", (precentDone) -> {
-			frame.setPrecentDone(precentDone);
-			if (precentDone >= 100) {
-				frame.setVisible(false);
-				frame.dispose();
-			}
-		});
+			SystemFiles.downloadFromURL(url, dependencyName + ".exe", "./scripts", (precentDone) -> {
+				frame.setPrecentDone(precentDone);
+				if (precentDone >= 100) {
+					frame.setVisible(false);
+					frame.dispose();
+				}
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
