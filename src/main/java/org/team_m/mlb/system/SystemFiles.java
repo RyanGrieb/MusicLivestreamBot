@@ -3,13 +3,18 @@ package org.team_m.mlb.system;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -93,6 +98,11 @@ public class SystemFiles {
 		return folder.exists() && folder.isDirectory();
 	}
 
+	public static boolean fileExists(String filePath) {
+		File file = new File(filePath);
+		return file.exists() && file.isFile();
+	}
+
 	public static boolean createFolder(String folderPath) {
 		File folder = new File(folderPath);
 		return folder.mkdirs();
@@ -130,6 +140,35 @@ public class SystemFiles {
 			System.out.println("File not found in the directory");
 		}
 	}
+
+	public static void downloadFromURL(String fileURL, String fileName, String destination, Consumer<Long> progressCallback) throws IOException {
+	    URL url = new URL(fileURL);
+	    HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+	    long fileSize = httpConn.getContentLengthLong();
+
+	    // Create directories if they don't exist
+	    new File(destination).mkdirs();
+
+	    FileOutputStream outputStream = new FileOutputStream(destination + "/" + fileName);
+
+	    InputStream inputStream = httpConn.getInputStream();
+	    byte[] buffer = new byte[1024];
+	    int bytesRead;
+	    long totalBytesRead = 0;
+	    while ((bytesRead = inputStream.read(buffer)) != -1) {
+	        outputStream.write(buffer, 0, bytesRead);
+	        totalBytesRead += bytesRead;
+	        long percentDone = (totalBytesRead * 100) / fileSize;
+	        System.out.printf("Downloaded %d%%\n", percentDone);
+	        progressCallback.accept(percentDone);
+	    }
+
+	    // Close the streams
+	    inputStream.close();
+	    outputStream.close();
+	    httpConn.disconnect();
+	}
+
 
 	private static void mergeJSONObjects(JSONObject originalJson, JSONObject newJson) {
 		for (String key : newJson.keySet()) {

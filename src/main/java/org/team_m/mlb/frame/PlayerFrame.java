@@ -555,6 +555,7 @@ public class PlayerFrame extends JFrame {
 
 	private void updateAvailableSongs() {
 		String songsDirectory = System.getProperty("user.dir") + "/songs";
+		SystemFiles.createFolder(songsDirectory);
 		ArrayList<String> songNames = SystemFiles.getFileNameList(songsDirectory, "mp3");
 		setJListValues(this.listAvailableSongs, songNames);
 	}
