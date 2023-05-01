@@ -7,11 +7,14 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.function.Consumer;
@@ -141,34 +144,47 @@ public class SystemFiles {
 		}
 	}
 
-	public static void downloadFromURL(String fileURL, String fileName, String destination, Consumer<Long> progressCallback) throws IOException {
-	    URL url = new URL(fileURL);
-	    HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
-	    long fileSize = httpConn.getContentLengthLong();
+	public static void downloadFromURL(String fileURL, String fileName, String destination,
+			Consumer<Long> progressCallback) throws IOException {
+		URL url = new URL(fileURL);
+		HttpURLConnection httpConn = (HttpURLConnection) url.openConnection();
+		long fileSize = httpConn.getContentLengthLong();
 
-	    // Create directories if they don't exist
-	    new File(destination).mkdirs();
+		// Create directories if they don't exist
+		new File(destination).mkdirs();
 
-	    FileOutputStream outputStream = new FileOutputStream(destination + "/" + fileName);
+		FileOutputStream outputStream = new FileOutputStream(destination + "/" + fileName);
 
-	    InputStream inputStream = httpConn.getInputStream();
-	    byte[] buffer = new byte[1024];
-	    int bytesRead;
-	    long totalBytesRead = 0;
-	    while ((bytesRead = inputStream.read(buffer)) != -1) {
-	        outputStream.write(buffer, 0, bytesRead);
-	        totalBytesRead += bytesRead;
-	        long percentDone = (totalBytesRead * 100) / fileSize;
-	        System.out.printf("Downloaded %d%%\n", percentDone);
-	        progressCallback.accept(percentDone);
-	    }
+		InputStream inputStream = httpConn.getInputStream();
+		byte[] buffer = new byte[1024];
+		int bytesRead;
+		long totalBytesRead = 0;
+		while ((bytesRead = inputStream.read(buffer)) != -1) {
+			outputStream.write(buffer, 0, bytesRead);
+			totalBytesRead += bytesRead;
+			long percentDone = (totalBytesRead * 100) / fileSize;
+			// System.out.printf("Downloaded %d%%\n", percentDone);
+			progressCallback.accept(percentDone);
+		}
 
-	    // Close the streams
-	    inputStream.close();
-	    outputStream.close();
-	    httpConn.disconnect();
+		// Close the streams
+		inputStream.close();
+		outputStream.close();
+		httpConn.disconnect();
 	}
 
+	public static String getFileHash(String filePath) throws IOException, NoSuchAlgorithmException {
+		byte[] fileData = Files.readAllBytes(Path.of(filePath));
+		byte[] hash = MessageDigest.getInstance("SHA-256").digest(fileData);
+
+		// Convert the hash to a hexadecimal string
+		StringBuilder sb = new StringBuilder();
+		for (byte b : hash) {
+			sb.append(String.format("%02x", b)); // The %02x represents a 2-digit hexadecimal. E.g. byte w/ value of 12
+													// is turned into 12 => 0c
+		}
+		return sb.toString();
+	}
 
 	private static void mergeJSONObjects(JSONObject originalJson, JSONObject newJson) {
 		for (String key : newJson.keySet()) {

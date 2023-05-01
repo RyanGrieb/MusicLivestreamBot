@@ -23,7 +23,10 @@ import org.team_m.mlb.system.SystemInfo;
 public class CommandRunner {
 
 	public static final String FFMPEG_COMMAND = System.getProperty("user.dir") + "\\scripts\\ffmpeg.exe";
+	public static final String FFMPEG_HASH = "541898180797623330a789187251a21fd0f8d5ae421533641bac174a1ec820f3";
+
 	public static final String YT_DLP_COMMAND = System.getProperty("user.dir") + "\\scripts\\yt-dlp.exe";
+	public static final String YT_DLP_HASH = "5590c57bd0433ed239a2deaaf92e2ad6f37fe50f53664c821575cafe106a9421";
 
 	private ArrayList<Consumer<String>> commandOutputCallbacks = new ArrayList<>();
 
