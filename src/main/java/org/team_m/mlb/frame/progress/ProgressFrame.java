@@ -7,6 +7,7 @@ import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -29,6 +30,10 @@ public abstract class ProgressFrame extends JFrame {
 		setTitle(frameTitle);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 300, 188);
+		
+		ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("robot.png"));
+		setIconImage(icon.getImage());
+		
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 

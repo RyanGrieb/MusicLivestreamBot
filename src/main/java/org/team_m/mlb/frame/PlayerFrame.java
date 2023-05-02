@@ -21,6 +21,7 @@ import javax.swing.AbstractButton;
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -79,6 +80,9 @@ public class PlayerFrame extends JFrame {
 		setTitle("Music Livestream Bot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 786, 530);
+		
+		ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("robot.png"));
+		setIconImage(icon.getImage());
 
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
