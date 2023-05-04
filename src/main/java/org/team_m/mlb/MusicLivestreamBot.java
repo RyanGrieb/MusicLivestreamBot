@@ -1,6 +1,5 @@
 package org.team_m.mlb;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JOptionPane;
@@ -9,6 +8,9 @@ import org.team_m.mlb.command.CommandRunner;
 import org.team_m.mlb.frame.PlayerFrame;
 import org.team_m.mlb.frame.progress.DependencyDownloaderFrame;
 import org.team_m.mlb.system.SystemFiles;
+
+import com.github.weisj.darklaf.LafManager;
+import com.github.weisj.darklaf.theme.IntelliJTheme;
 
 /**
  * Main class for the program. Initializes the JFrame, and starts the
@@ -20,7 +22,11 @@ public class MusicLivestreamBot {
 	private static Thread streamThread;
 
 	public static void main(String[] args) {
-
+		
+		//TODO: Allow user to swap between themes
+		LafManager.setTheme(new IntelliJTheme());
+		LafManager.install();
+		
 		checkDependencies();
 
 		PlayerFrame frame = new PlayerFrame();

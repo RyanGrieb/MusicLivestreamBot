@@ -208,7 +208,7 @@ public class PlayerFrame extends JFrame {
 		scrollPane_1.setViewportView(listLivestreamPlaylist);
 		listLivestreamPlaylist.setValueIsAdjusting(true);
 		listLivestreamPlaylist.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		listLivestreamPlaylist.setBackground(SystemColor.menu);
+		listLivestreamPlaylist.setBackground(UIManager.getColor("Button.background"));
 
 		JLabel lblNewLabel_1 = new JLabel("Song Playlist:");
 		lblNewLabel_1.setBounds(20, 159, 123, 14);
@@ -285,7 +285,7 @@ public class PlayerFrame extends JFrame {
 		scrollPane_2.setViewportView(listAvailableImages);
 		listAvailableImages.setValueIsAdjusting(true);
 		listAvailableImages.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		listAvailableImages.setBackground(SystemColor.menu);
+		listAvailableImages.setBackground(UIManager.getColor("Button.background"));
 
 		JLabel lblAvailableImages = new JLabel("Images:");
 		lblAvailableImages.setBounds(477, 11, 80, 14);
