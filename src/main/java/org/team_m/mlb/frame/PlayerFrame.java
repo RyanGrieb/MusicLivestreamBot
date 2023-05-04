@@ -80,8 +80,8 @@ public class PlayerFrame extends JFrame {
 		setTitle("Music Livestream Bot");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 786, 530);
-		
-		ImageIcon icon = new ImageIcon(getClass().getClassLoader().getResource("robot.png"));
+
+		ImageIcon icon = new ImageIcon(System.getProperty("user.dir") + "/src/main/resources/robot.png");
 		setIconImage(icon.getImage());
 
 		JMenuBar menuBar = new JMenuBar();
@@ -736,7 +736,7 @@ public class PlayerFrame extends JFrame {
 			VideoDownloaderFrame downloaderFrame = new VideoDownloaderFrame();
 
 			VideoConverter.getInstance().onConvertCommadnOutput((output) -> {
-				//System.out.println("!" + output);
+				// System.out.println("!" + output);
 				String songName = null;
 
 				if (output.contains("Destination:")) {
